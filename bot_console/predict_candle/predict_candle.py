@@ -31,7 +31,6 @@ class EURUSD1MPredictor:
             return df
             
         except Exception as e:
-            print(f"❌ Error obteniendo datos: {e}")
             return None
     
     def calculate_indicators(self, df):
@@ -89,7 +88,7 @@ class EURUSD1MPredictor:
         return df
     
     def prepare_target(self, df):
-        """Preparar variable objetivo"""
+        """Preparar variable objetivo - solo SHORT y LONG"""
         if df is None:
             return None
             
@@ -98,20 +97,21 @@ class EURUSD1MPredictor:
         next_open = df['open'].shift(-1)
         next_body_pct = (next_close - next_open) / next_open
         
-        threshold = 0.00008
+        # Umbral más estricto para solo tener SHORT y LONG
+        threshold = 0.0001  # 1 pip para EURUSD
         
+        # Solo dos clases: SHORT y LONG
         conditions = [
-            next_body_pct > threshold,
-            next_body_pct < -threshold, 
-            (next_body_pct >= -threshold) & (next_body_pct <= threshold)
+            next_body_pct > threshold,   # LONG
+            next_body_pct <= threshold   # SHORT
         ]
-        choices = ['long', 'short', 'neutral']
+        choices = ['LONG', 'SHORT']
         
-        df['target'] = np.select(conditions, choices, default='neutral')
+        df['target'] = np.select(conditions, choices, default='SHORT')
         return df
     
     def create_balanced_dataset(self, X, y):
-        """Balancear dataset"""
+        """Balancear dataset para solo 2 clases"""
         from collections import Counter
         
         class_counts = Counter(y)
@@ -144,11 +144,11 @@ class EURUSD1MPredictor:
         return X, y
     
     def train_model(self):
-        """Entrenar modelo"""
+        """Entrenar modelo para solo SHORT/LONG"""
         if self.model_trained:
             return True
             
-        print("🚀 ENTRENANDO MODELO POR PRIMERA VEZ...")
+        print("🚀 ENTRENANDO MODELO (SHORT/LONG ONLY)...")
         
         df = self.get_historical_data(1500)
         if df is None:
@@ -174,7 +174,6 @@ class EURUSD1MPredictor:
         # Verificar características
         missing_features = [f for f in self.feature_names if f not in df.columns]
         if missing_features:
-            print(f"❌ Características faltantes: {missing_features}")
             return False
         
         valid_mask = ~df[self.feature_names + ['target']].isna().any(axis=1)
@@ -217,12 +216,11 @@ class EURUSD1MPredictor:
         return True
     
     def get_current_candle_data(self):
-        """Obtener datos de la vela actual de forma eficiente"""
+        """Obtener datos de la vela actual"""
         try:
             if not mt5.initialize():
                 return None, None
                 
-            # Obtener solo las últimas 2 velas
             rates = mt5.copy_rates_from_pos("EURUSD", mt5.TIMEFRAME_M1, 0, 2)
             mt5.shutdown()
             
@@ -230,8 +228,6 @@ class EURUSD1MPredictor:
                 return None, None
                 
             current_candle = rates[-1]
-            previous_candle = rates[-2] if len(rates) > 1 else None
-            
             current_time = datetime.fromtimestamp(current_candle['time'])
             
             return current_candle, current_time
@@ -246,12 +242,10 @@ class EURUSD1MPredictor:
         if current_candle is None or current_time is None:
             return False, None
         
-        # Primera verificación
         if self.last_candle_time is None:
             self.last_candle_time = current_time
             return True, current_time
         
-        # Verificar si el tiempo cambió (nueva vela)
         if current_time != self.last_candle_time:
             self.last_candle_time = current_time
             return True, current_time
@@ -260,7 +254,6 @@ class EURUSD1MPredictor:
     
     def get_prediction_features(self):
         """Obtener características para predicción"""
-        # Necesitamos datos históricos para calcular indicadores
         df = self.get_historical_data(100)
         if df is None:
             return None
@@ -277,7 +270,7 @@ class EURUSD1MPredictor:
         return current_features
     
     def predict_next_candle(self):
-        """Predecir siguiente vela"""
+        """Predecir siguiente vela - solo retorna SHORT o LONG"""
         if not self.model_trained:
             if not self.train_model():
                 return None
@@ -291,18 +284,14 @@ class EURUSD1MPredictor:
         probabilities = self.model.predict_proba(current_scaled)[0]
         confidence = max(probabilities)
         
-        if confidence > 0.7 and prediction != 'neutral':
-            action = 'HIGH_CONFIDENCE_TRADE'
-        elif confidence > 0.6:
-            action = 'CONSIDER_TRADE'
+        # Solo retornar si la confianza es alta
+        if confidence > 0.65:
+            return {
+                'prediction': prediction,  # Solo será SHORT o LONG
+                'confidence': confidence,
+                'probabilities': dict(zip(self.model.classes_, probabilities)),
+                'timestamp': datetime.now()
+            }
         else:
-            action = 'WAIT'
-        
-        return {
-            'prediction': prediction,
-            'confidence': confidence,
-            'probabilities': dict(zip(self.model.classes_, probabilities)),
-            'action': action,
-            'timestamp': datetime.now()
-        }
+            return None
 

@@ -32,31 +32,33 @@ timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
 predictor = EURUSD1MPredictor()
 
 def predict_signal():
-    """Función de predicción optimizada"""
+    """Función de predicción - solo muestra SHORT o LONG con alta confianza"""
     signal = predictor.predict_next_candle()
     
     if signal:
-        print(f"\n🎯 NUEVA PREDICCIÓN:")
-        print(f"   Señal: {signal['prediction'].upper()}")
-        print(f"   Confianza: {signal['confidence']:.1%}")
-        print(f"   Acción: {signal['action']}")
-        print(f"   Probabilidades:")
-        for cls, prob in signal['probabilities'].items():
-            print(f"     {cls}: {prob:.1%}")
+        prediction = signal['prediction']
+        confidence = signal['confidence']
         
-        return signal['prediction']
-    else:
-        print("❌ No se pudo obtener predicción")
-        return 'neutral'
+        # Solo mostrar si la confianza es alta
+        if confidence > 0.65:
+            if prediction == 'LONG':
+                print(f"🎯 SEÑAL: {prediction} (Confianza: {confidence:.1%})")
+            else:  # SHORT
+                print(f"🎯 SEÑAL: {prediction} (Confianza: {confidence:.1%})")
+            
+            return prediction
+    
+    # No mostrar nada si no hay señal confianza
+    return None
 
-
-# Variables globales para control
 
 # Tu código principal modificado
 def main():
     """Función principal optimizada"""
     try:
-        print("🚀 Iniciando Bot de Trading...")
+        print("🚀 Iniciando Bot de Trading EURUSD 1M")
+        print("🎯 Modo: Solo señales SHORT/LONG con alta confianza")
+        
         login = LoginMT5()
         connected = login.login()
         
@@ -64,60 +66,53 @@ def main():
             print("❌ No se pudo conectar a MetaTrader 5.")
             return
         
-        print("✅ Conectado a MetaTrader 5 correctamente.")
+        print("✅ Conectado a MetaTrader 5")
         
         mt5_client = MetaTrader5()
         mt5_client.getGlobalInfo()
 
         # Inicializar modelo
-        print("🔄 Inicializando modelo de predicción...")
+        print("🔄 Inicializando modelo...")
         if not predictor.train_model():
             print("❌ No se pudo entrenar el modelo")
             return
 
-        print("✅ Modelo listo. Monitoreando velas en tiempo real...")
-        print("⏰ Esperando nuevas velas...")
+        print("✅ Modelo listo. Monitoreando velas...")
+        print("⏰ Esperando señales SHORT/LONG con >65% confianza...")
+        
+        signal_count = 0
         
         while True:            
-            # Verificar nueva vela con nuestro método optimizado
             new_candle, candle_time = predictor.check_new_candle()
             
             if new_candle:
-                print(f"\n{'='*60}")
-                print(f"🕯️ NUEVA VELA DETECTADA: {candle_time.strftime('%Y-%m-%d %H:%M:%S')}")
-                print(f"{'='*60}")
-                
-                # Pequeña pausa para asegurar que la vela está completa
-                time.sleep(1)
+                print(f"\n{'='*50}")
+                print(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
                 
                 # Predecir señal
                 signal = predict_signal()
                 
-                if signal == 'neutral':
-                    print("🟡 No se abre operación (neutral).")
-                    continue
-                else:
+                if signal:
+                    signal_count += 1
+                    print(f"📈 Señal #{signal_count} detectada")
+                    
                     # Ejecutar estrategia
                     SinglePositionSimulator.strategy_single_position(
                         symbol="EURUSD", 
                         volume=0.01, 
                         signal=signal
                     )
+                else:
+                    print("⏭️  Sin señal confiable")
                 
-                print(f"\n⏳ Esperando siguiente vela...")
-            else:
-                # Verificación más frecuente pero con mensaje solo ocasional
-                if int(time.time()) % 30 == 0:  # Mostrar cada 30 segundos
-                    current_candle, current_time = predictor.get_current_candle_data()
-                    if current_time:
-                        print(f"⏰ Vela actual: {current_time.strftime('%H:%M:%S')} - Esperando nueva vela...", end='\r')
-                
-                time.sleep(1)  # Verificar cada segundo
+                print(f"{'='*50}")
+            
+            time.sleep(1)
         
     except Exception as e:
-        print(f"❌ Error en la aplicación: {e}")
+        print(f"❌ Error: {e}")
     except KeyboardInterrupt:
-        print("\n🛑 Bot detenido por el usuario")
+        print("\n🛑 Bot detenido")
     finally:
         print("🔴 Bot finalizado")
 

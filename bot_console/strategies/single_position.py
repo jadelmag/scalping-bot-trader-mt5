@@ -370,33 +370,33 @@ class SinglePositionSimulator:
                         if len(profits) >= 2:
                             max_profit = max(profits)
                             close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
+                            print(f" Max Profit: {max_profit:.2f} | Close Profit: {close_profit:.2f}")
                             if order.profit < close_profit:  
                                 SinglePositionSimulator.close_position(order)
                                 SinglePositionSimulator.clear_positions()
                                 return
-                    elif order.profit < 0:  # Cerrar si la pérdida supera $50
-                        SinglePositionSimulator.close_position(order)
-                        SinglePositionSimulator.clear_positions()
-                        return
+                    # elif order.profit < 0:
+                    #     SinglePositionSimulator.close_position(order)
+                    #     return
 
                 time.sleep(1)
 
         except KeyboardInterrupt:
             print(SinglePositionSimulator.color_text("\n🛑 Simulación detenida por el usuario.", "red"))
 
-    # @staticmethod
-    # def recovery_profit(lostProfit, currentType, order):
-    #     """Recupera el profit perdido."""
-    #     print(SinglePositionSimulator.color_text(f"🔴 Pérdida: -{lostProfit:.2f} USD", "red"))
+    @staticmethod
+    def recovery_profit(lostProfit, currentType, order):
+        """Recupera el profit perdido."""
+        print(SinglePositionSimulator.color_text(f"🔴 Pérdida: -{lostProfit:.2f} USD", "red"))
 
-    #     SinglePositionSimulator.lostMoney = lostProfit
-    #     SinglePositionSimulator.recoveryProfit = True
+        SinglePositionSimulator.lostMoney = lostProfit
+        SinglePositionSimulator.recoveryProfit = True
 
-    #     # oppositeType = SinglePositionSimulator.get_opposite_type(currentType)
-    #     # if (oppositeType == "long"):
-    #     #     SinglePositionSimulator.open_long(order.symbol, order.price_open, order.volume * 2)
-    #     # elif (oppositeType == "short"):
-    #     #     SinglePositionSimulator.open_short(order.symbol, order.price_open, order.volume * 2)
+        oppositeType = SinglePositionSimulator.get_opposite_type(currentType)
+        if (oppositeType == "long"):
+            SinglePositionSimulator.open_long(order.symbol, order.price_open, order.volume * 2)
+        elif (oppositeType == "short"):
+            SinglePositionSimulator.open_short(order.symbol, order.price_open, order.volume * 2)
 
     @staticmethod
     def close_position(order):
