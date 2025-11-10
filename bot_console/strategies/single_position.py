@@ -56,7 +56,7 @@ class SinglePositionSimulator:
         return f"{colors.get(color, '')}{text}{colors['reset']}"
 
     @staticmethod
-    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, signal: str="neutral"):
+    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, trend: str="lateral"):
         """
         Estrategia principal de simulación.
         """
@@ -66,17 +66,16 @@ class SinglePositionSimulator:
             return
 
         print(SinglePositionSimulator.color_text("🔄 Iniciando simulación de ticks (60 segundos...)", "blue"))
-        print(SinglePositionSimulator.color_text(f"OPERAR: {signal.upper()}", "blue"))
 
-        if (signal.upper() == 'LONG'):
-            SinglePositionSimulator.open_long(symbol, volume)
-        elif (signal.upper() == 'SHORT'):
-            SinglePositionSimulator.open_short(symbol, volume)
-        else:
-            print("🟡 No se abre operación (neutral).")
-            return
+        # if (signal.upper() == 'LONG'):
+        #     SinglePositionSimulator.open_long(symbol, volume)
+        # elif (signal.upper() == 'SHORT'):
+        #     SinglePositionSimulator.open_short(symbol, volume)
+        # else:
+        #     print("🟡 No se abre operación (neutral).")
+        #     return
 
-        SinglePositionSimulator.monitor_positions(symbol)
+        # SinglePositionSimulator.monitor_positions(symbol)
 
 
     # ------------------- Funciones de deteccion operacion -------------------

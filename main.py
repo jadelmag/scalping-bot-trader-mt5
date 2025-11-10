@@ -15,6 +15,7 @@ from bot_console.metatrader5.metatrader5 import MetaTrader5
 
 # Configuración desde variables de entorno
 symbol = os.getenv("SYMBOL", "EURUSD")
+volume = os.getenv("VOLUME", "0.01")
 timeframe_map = {
     "1": mt5.TIMEFRAME_M1,
     "5": mt5.TIMEFRAME_M5,
@@ -26,31 +27,6 @@ timeframe_map = {
 }
 default_timeframe = os.getenv("TIMEFRAME", "1")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
-
-
-# Instancia global
-predictor = EURUSD1MPredictor()
-
-def predict_signal():
-    """Función de predicción - solo muestra SHORT o LONG con alta confianza"""
-    signal = predictor.predict_next_candle()
-    
-    if signal:
-        prediction = signal['prediction']
-        confidence = signal['confidence']
-        
-        # Solo mostrar si la confianza es alta
-        if confidence > 0.65:
-            if prediction == 'LONG':
-                print(f"🎯 SEÑAL: {prediction} (Confianza: {confidence:.1%})")
-            else:  # SHORT
-                print(f"🎯 SEÑAL: {prediction} (Confianza: {confidence:.1%})")
-            
-            return prediction
-    
-    # No mostrar nada si no hay señal confianza
-    return None
-
 
 # Tu código principal modificado
 def main():
@@ -73,37 +49,20 @@ def main():
 
         # Inicializar modelo
         print("🔄 Inicializando modelo...")
-        if not predictor.train_model():
-            print("❌ No se pudo entrenar el modelo")
-            return
+        predictor = EURUSD1MPredictor()
 
-        print("✅ Modelo listo. Monitoreando velas...")
-        print("⏰ Esperando señales SHORT/LONG con >65% confianza...")
-        
-        signal_count = 0
-        
         while True:            
             new_candle, candle_time = predictor.check_new_candle()
             
             if new_candle:
                 print(f"\n{'='*50}")
                 print(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
-                
-                # Predecir señal
-                signal = predict_signal()
-                
-                if signal:
-                    signal_count += 1
-                    print(f"📈 Señal #{signal_count} detectada")
-                    
-                    # Ejecutar estrategia
-                    SinglePositionSimulator.strategy_single_position(
-                        symbol="EURUSD", 
-                        volume=0.01, 
-                        signal=signal
-                    )
-                else:
-                    print("⏭️  Sin señal confiable")
+
+                # Ejecutar estrategia
+                SinglePositionSimulator.strategy_single_position(
+                    symbol=symbol, 
+                    volume=volume,
+                )
                 
                 print(f"{'='*50}")
             
