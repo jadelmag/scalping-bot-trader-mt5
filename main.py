@@ -49,31 +49,18 @@ def main():
 
         # Inicializar modelo
         print("🔄 Inicializando modelo...")
-        predictor = EURUSD1MPredictor(
-            symbol=symbol,
-            rsi_period=5,
-            history_n=1000,
-            use_pattern_adjust=False,        # o False si no quieres TA-Lib
-            pattern_adjust_weight=0.3       # 0.0 = solo RSI, 1.0 = solo patrón
-        )
+        predictor = EURUSD1MPredictor(symbol=symbol)
 
         while True:            
             # luego en el loop
             new_candle, candle_time = predictor.check_new_candle()
 
             if new_candle:
-                pred, conf = predictor.predict_next_candle()
-                # actúa según conf['up'] / conf['down']
                 print(f"\n{'='*50}")
                 print(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
-                print(f"🎯 Predicción siguiente vela: {pred}  (up {conf['up']*100:.1f}%  |  down {conf['down']*100:.1f}%)")
 
                 # Ejecutar estrategia
-                SinglePositionSimulator.strategy_single_position(
-                    symbol=symbol, 
-                    volume=VOLUME,
-                    signal=pred
-                )
+                SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME)
                 
                 print(f"{'='*50}")
             
