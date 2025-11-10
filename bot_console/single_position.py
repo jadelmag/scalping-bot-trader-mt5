@@ -89,19 +89,14 @@ class SinglePositionSimulator:
             return None
 
     @staticmethod
-    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
+    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01):
         """
         Estrategia principal de simulación.
         """
         print(SinglePositionSimulator.color_text("🔄 Iniciando simulación de ticks (60 segundos...)", "blue"))
 
-        if (signal.upper() == LONG):
-            SinglePositionSimulator.open_long(symbol, volume)
-        elif (signal.upper() == SHORT):
-            SinglePositionSimulator.open_short(symbol, volume)
-        else:
-            print(SinglePositionSimulator.color_text("🟡 No se abre operación (neutral).", "blue"))
-            return
+        SinglePositionSimulator.open_long(symbol, volume)
+        SinglePositionSimulator.open_short(symbol, volume)
 
         SinglePositionSimulator.monitor_positions(symbol)
 

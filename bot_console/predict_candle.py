@@ -34,39 +34,3 @@ class EURUSD1MPredictor:
             return True, last_time
 
         return False, last_time
-
-    def predict_candle_direction(self, data, seconds_window=15):
-        """
-        Predice si una vela será LONG o SHORT basándose en ASK/BID cada segundo.
-        
-        Parámetros:
-        -----------
-        data : list of dict
-            Ejemplo: [{'second': 1, 'ask': 1.15603, 'bid': 1.15601}, ...]
-        seconds_window : int
-            Número de segundos a analizar (por defecto 15s)
-        
-        Retorna:
-        --------
-        str : "LONG" o "SHORT"
-        """
-        # Tomar solo los primeros segundos_window datos
-        window = data[:seconds_window]
-        mids = np.array([(d['ask'] + d['bid']) / 2 for d in window])
-        times = np.arange(len(mids))
-        
-        # Regresión lineal para estimar tendencia
-        slope, intercept, r, p, std_err = linregress(times, mids)
-        
-        # También podemos considerar el cambio neto
-        delta = mids[-1] - mids[0]
-        
-        # Combinar señales: tendencia + delta
-        score = slope * 100000 + delta * 100000  # amplificar cambios pequeños
-        
-        if score > 0:
-            return "LONG"
-        elif score < 0:
-            return "SHORT"
-        else:
-            return "NEUTRAL"
