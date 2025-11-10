@@ -344,8 +344,8 @@ class SinglePositionSimulator:
                                 SinglePositionSimulator.close_position(order)
                                 SinglePositionSimulator.clear_positions()
                                 return
-                    elif order.profit < 50:
-                        print(f"🔴 Pérdida: -{order.profit:.2f} USD")
+                    elif abs(order.profit) < 150:
+                        print(f"🔴 Pérdida: {order.profit:.2f} USD")
                         SinglePositionSimulator.close_position(order)
                         SinglePositionSimulator.clear_positions()
                         return

@@ -53,7 +53,7 @@ def main():
             symbol=symbol,
             rsi_period=5,
             history_n=1000,
-            use_pattern_adjust=True,        # o False si no quieres TA-Lib
+            use_pattern_adjust=False,        # o False si no quieres TA-Lib
             pattern_adjust_weight=0.3       # 0.0 = solo RSI, 1.0 = solo patrón
         )
 
