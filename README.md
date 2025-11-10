@@ -56,7 +56,19 @@ scalping-bot-trader-mt5/
    cd scalping-bot-trader-mt5
    ```
 
-2. **Ejecutar el bot**
+2. **Instalar dependencias**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Agregar .env y sus variables**
+   ```bash
+   MT5_ACCOUNT=""
+   MT5_PASSWORD=""
+   MT5_SERVER=""
+   ```
+
+4. **Ejecutar el bot**
    ```bash
    python main.py
    ```
@@ -68,8 +80,15 @@ scalping-bot-trader-mt5/
 El bot se ejecuta de forma continua realizando simulaciones automáticas:
 
 ```python
-# El bot iniciará automáticamente con la configuración por defecto
+# El bot iniciará automáticamente con metatrader5
 python main.py
+```
+
+### Ejecución de Simulación
+
+```python
+# El bot iniciará automáticamente con la configuración por defecto
+python simulation/main.py
 ```
 
 ### Configuración de Estrategias
