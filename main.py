@@ -70,8 +70,6 @@ def main():
         
     except Exception as e:
         print(f"❌ Error: {e}")
-    except KeyboardInterrupt:
-        print("\n🛑 Bot detenido")
     finally:
         print("🔴 Bot finalizado")
 

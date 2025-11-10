@@ -56,7 +56,7 @@ class SinglePositionSimulator:
         return f"{colors.get(color, '')}{text}{colors['reset']}"
 
     @staticmethod
-    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, trend: str="lateral"):
+    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01):
         """
         Estrategia principal de simulación.
         """
