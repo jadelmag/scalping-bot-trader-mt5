@@ -160,30 +160,6 @@ class MetaTrader5:
             print(f"❌ Error en getGlobalInfo: {e}")
             return {}
 
-    def getSymbolInfoTick(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """
-        Obtiene información de la velas de un símbolo.
-        """
-        try:
-            # Obtener el precio actual
-            tick = mt5.symbol_info_tick(symbol)
-            if tick:
-                return {
-                    "symbol": symbol,
-                    "ask": tick.ask,
-                    "bid": tick.bid,
-                    "volume": tick.volume,
-                    "time": tick.time,
-                    "last": tick.last,
-                    "time_msc": tick.time_msc
-                }
-            else:
-                print(f"❌ No se pudo obtener información de la velas para {symbol}")
-                return None
-        except Exception as e:
-            print(f"❌ Error al obtener información de la velas: {e}")
-            return None
-
     def _update_account_info(self) -> None:
         """Actualiza toda la información de la cuenta."""
         try:
@@ -197,50 +173,6 @@ class MetaTrader5:
             self.positions = mt5.positions_get() or []
         except Exception as e:
             print(f"⚠️ Error al actualizar información de cuenta: {e}")
-
-    def check_new_candle_historical(self, symbol, timeframe=mt5.TIMEFRAME_M1):
-        """Método más confiable usando datos históricos de MT5"""
-        try:
-            # Obtener las últimas 2 velas
-            rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 2)
-            
-            if rates is None or len(rates) < 2:
-                return False, self.last_candle_time
-            
-            # La vela más reciente es la posición 0
-            current_candle_time = rates[0]['time']
-            previous_candle_time = rates[1]['time']
-            
-            # Convertir timestamp a datetime en la zona horaria local
-            def to_local_time(timestamp):
-                # Primero creamos un datetime naive en UTC
-                utc_time = datetime.utcfromtimestamp(timestamp)
-                # Luego lo hacemos consciente de la zona horaria UTC
-                utc_time = utc_time.replace(tzinfo=timezone.utc)
-                # Finalmente lo convertimos a la zona horaria local
-                return utc_time.astimezone()
-            
-            # Si es la primera ejecución (last_candle_time es None), inicializar sin reportar nueva vela
-            if self.last_candle_time is None:
-                self.last_candle_time = current_candle_time
-                local_time = to_local_time(current_candle_time)
-                utc_dt = datetime.utcfromtimestamp(current_candle_time).replace(tzinfo=timezone.utc)
-                print(f"🔄 Inicializando detección de velas. Hora local: {datetime.now().astimezone()}")
-                print(f"📊 Vela actual (local): {datetime.now().astimezone()}")
-                return False, local_time
-            
-            # Si el tiempo actual es diferente al guardado, hay nueva vela
-            if self.last_candle_time != current_candle_time:
-                self.last_candle_time = current_candle_time
-                local_time = to_local_time(current_candle_time)
-                print(f"🆕 Nueva vela detectada a las {local_time}")
-                return True, local_time
-            
-            return False, to_local_time(current_candle_time)
-            
-        except Exception as e:
-            print(f"Error en check_new_candle_historical: {e}")
-            return False, self.last_candle_time
 
     def close(self) -> None:
         """Cierra la conexión con MetaTrader 5."""
