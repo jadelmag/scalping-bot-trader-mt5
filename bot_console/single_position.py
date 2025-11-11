@@ -3,6 +3,7 @@ import pandas as pd
 import MetaTrader5 as mt5
 from bot_console.resumes import ResumeJsonL
 from bot_console.logger import Logger
+from datetime import datetime
 
 LONG = "LONG"
 SHORT = "SHORT"
@@ -45,7 +46,7 @@ class SinglePositionSimulator:
     """
     logger = Logger()
     open_positions = []
-    resume_logger = ResumeJsonL("strategy_single_position")
+    resume_logger = ResumeJsonL(f"strategy_single_position_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
     @staticmethod
     def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):

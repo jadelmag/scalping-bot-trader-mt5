@@ -14,4 +14,6 @@ class Logger:
             "white": "\033[97m",
             "reset": "\033[0m"
         }
-        return f"{colors.get(color, '')}{text}{colors['reset']}"
+        colored_text = f"{colors.get(color, '')}{text}{colors['reset']}"
+        print(colored_text)
+        return colored_text

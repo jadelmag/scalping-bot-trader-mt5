@@ -178,28 +178,77 @@ class CandleStick:
         """
         self.update()
         pattern, signal = self.detect_pattern()
-        print(f"📊 Patrón detectado: {pattern} → Señal: {signal}")
+        # print(f"📊 Patrón detectado: {pattern} → Señal: {signal}")
         return signal
 
     # ------------------- FUNCIONES -------------------
 
+    def detect_pattern(self, offset: int = 0):
+        """
+        Evalúa los últimos candles y detecta el patrón actual.
+        offset=0 -> analiza la última vela (por ejemplo para backtest)
+        offset=1 -> analiza la vela cerrada inmediatamente anterior (útil en tiempo real)
+        """
+        df = self.df
+        # índices relativos teniendo en cuenta offset
+        idx_c = -1 - offset
+        idx_p1 = -2 - offset
+        idx_p2 = -3 - offset
+
+        # comprobar que hay suficientes velas
+        if len(df) + idx_p2 < 0:  # significa que no hay al menos 3 velas si offset es 0,1,etc.
+            return ("NONE", "NEUTRAL")
+
+        c = df.iloc[idx_c]
+        p1 = df.iloc[idx_p1] if len(df) + idx_p1 >= 0 else None
+        p2 = df.iloc[idx_p2] if len(df) + idx_p2 >= 0 else None
+
+        # 1-Vela
+        pattern = (
+            self.is_hammer(c) or
+            self.is_shooting_star(c) or
+            self.is_marubozu(c) or
+            self.is_doji(c)
+        )
+
+        # 2-Velas
+        if p1 is not None and pattern is None:
+            pattern = (
+                self.is_bullish_engulfing(p1, c) or
+                self.is_bearish_engulfing(p1, c) or
+                self.is_piercing(p1, c) or
+                self.is_dark_cloud(p1, c) or
+                self.is_harami(p1, c)
+            )
+
+        # 3-Velas
+        if p2 is not None and pattern is None:
+            pattern = (
+                self.is_morning_star(p2, p1, c) or
+                self.is_evening_star(p2, p1, c) or
+                self.is_three_white_soldiers(p2, p1, c) or
+                self.is_three_black_crows(p2, p1, c)
+            )
+
+        return pattern or ("NONE", "NEUTRAL")
+
     def get_type_signal_when_candle_finish(self):
         """
         Detecta la señal de la vela cuando termina realmente.
-        Solo se evalúa cuando aparece una nueva vela cerrada.
+        Retorna None si la vela aún no ha cerrado; si ha cerrado, analiza
+        la vela anterior (cerrada) y devuelve la señal.
         """
-        # Guardar la última vela actual
+        # tiempo de la última vela conocida
         last_time = self.df['time'].iloc[-1]
 
-        # Actualizar datos
-        new_df = self.update()
+        # actualizar (self.df se actualiza dentro)
+        updated_df = self.update()
 
         # Si todavía estamos en la misma vela, no hacer nada
-        if new_df['time'].iloc[-1] == last_time:
-            # Todavía no se ha cerrado la vela
-            return None  
+        if updated_df['time'].iloc[-1] == last_time:
+            return None  # la vela actual no se ha cerrado todavía
 
-        # Si la vela cambió (nueva vela cerrada), analizamos la anterior
-        pattern, signal = self.detect_pattern()
-        print(f"✅ Nueva vela detectada: {new_df['time'].iloc[-1]} → Patrón: {pattern}, Señal: {signal}")
-        return signal
+        # Apareció una nueva vela -> la vela cerrada es la penúltima
+        pattern, signal = self.detect_pattern(offset=1)
+        print(f"✅ Vela cerrada detectada: {updated_df['time'].iloc[-2]} → Patrón: {pattern}, Señal: {signal}")
+        return signal, pattern

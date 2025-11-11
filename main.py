@@ -30,7 +30,7 @@ default_timeframe = os.getenv("TIMEFRAME", "1")
 symbol = os.getenv("SYMBOL", "EURUSD")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
 
-resume_logger = ResumeJsonL("main")
+resume_logger = ResumeJsonL(f"main_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 logger = Logger()
 
 # Tu código principal modificado
@@ -68,22 +68,22 @@ def main():
             new_candle, candle_time = candle_generator.check_new_candle()
 
             if new_candle:
-                previus_candle = candle_stick.get_type_signal_when_candle_finish()
-                logger.color_text(f"🕯️ Prvius Candle was: {previus_candle}")
-                resume_logger.log(f"🕯️ Prvius Candle was: {previus_candle}")
+                signal, pattern = candle_stick.get_type_signal_when_candle_finish()
+                logger.color_text(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}", "blue")
+                resume_logger.log(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}")
 
-                logger.color_text(f"\n{'='*50}")
+                logger.color_text(f"\n{'='*50}", "blue")
                 resume_logger.log(f"\n{'='*50}")
-                logger.color_text(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
+                logger.color_text(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}", "blue")
                 resume_logger.log(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
                 
                 signal = candle_stick.predict_short_or_long_candle()
-                logger.color_text(f"Signal: {signal}")
+                logger.color_text(f"Signal: {signal}", "blue")
                 resume_logger.log(f"Signal: {signal}")
                 # Ejecutar estrategia
                 # SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal)
                 
-                logger.color_text(f"{'='*50}")
+                logger.color_text(f"{'='*50}", "blue")
                 resume_logger.log(f"{'='*50}")
             
             time.sleep(1)
