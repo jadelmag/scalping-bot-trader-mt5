@@ -39,66 +39,71 @@ def main():
     """Función principal optimizada"""
     try:
         logger.color_text("🚀 Iniciando Bot de Trading EURUSD 1M", "blue")
-        resume_logger.log("🚀 Iniciando Bot de Trading EURUSD 1M")
-        logger.color_text("🎯 Modo: Solo señales SHORT/LONG con alta confianza", "blue")
-        resume_logger.log("🎯 Modo: Solo señales SHORT/LONG con alta confianza")
+        logger.color_text("🎯 Estrategia: Operar al inicio de nueva vela basado en patrón de vela cerrada", "blue")
         
         login = LoginMT5()
         connected = login.login()
         
         if not connected:
             logger.color_text("❌ No se pudo conectar a MetaTrader 5.", "red")
-            resume_logger.log("❌ No se pudo conectar a MetaTrader 5.")
             return
         
         logger.color_text("✅ Conectado a MetaTrader 5", "green")
-        resume_logger.log("✅ Conectado a MetaTrader 5")
         
         mt5_client = MetaTrader5()
         mt5_client.getGlobalInfo()
 
         # Inicializar modelo
         logger.color_text("🔄 Inicializando modelo...", "blue")
-        resume_logger.log("🔄 Inicializando modelo...")
         candle_generator = CandleGenerator(symbol=symbol)
-        candle_stick = CandleStick(symbol=symbol)
-
-        while True:            
-            # luego en el loop
+        candle_stick = CandleStick(symbol=symbol, timeframe=timeframe)
+        
+        # Variable para controlar la última vela procesada
+        last_processed_candle = None
+        
+        while True:
+            # Verificar si hay nueva vela
             new_candle, candle_time = candle_generator.check_new_candle()
 
             if new_candle:
-                result = candle_stick.get_type_signal_when_candle_finish()
-                if result is not None:
-                    signal, pattern = result
-                    logger.color_text(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}", "blue")
-                    resume_logger.log(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}")
-                else:
-                    logger.color_text("🕯️ No hay nueva vela cerrada para analizar", "yellow")
-                    resume_logger.log("🕯️ No hay nueva vela cerrada para analizar")
-
                 logger.color_text(f"\n{'='*50}", "blue")
-                resume_logger.log(f"\n{'='*50}")
-                logger.color_text(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}", "blue")
-                resume_logger.log(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
+                logger.color_text(f"🕯️ NUEVA VELA INICIADA: {candle_time.strftime('%H:%M:%S')}", "cyan")
                 
-                signal = candle_stick.predict_short_or_long_candle()
-                logger.color_text(f"SEÑAL PARA ABRIR OPERACIÓN: {signal}", "blue")
-                resume_logger.log(f"SEÑAL PARA ABRIR OPERACIÓN: {signal}")
-                # Ejecutar estrategia
-                SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal)
+                # Obtener señal de la vela cerrada
+                signal = candle_stick.get_signal_for_new_candle()
                 
-                logger.color_text(f"{'='*50}", "blue")
-                resume_logger.log(f"{'='*50}")
+                if signal:
+                    logger.color_text(f"➡️ SEÑAL DETECTADA: {signal.upper()}", "yellow" if signal == "neutral" else "green")
+                    resume_logger.log({"message": f"➡️ SEÑAL DETECTADA: {signal.upper()}", "type": "info"})
+
+                    # Evitar procesar la misma vela múltiples veces
+                    if last_processed_candle != candle_time:
+                        last_processed_candle = candle_time
+                        
+                        # Ejecutar estrategia solo si hay señal válida
+                        if signal in ["long", "short"]:
+                            logger.color_text(f"🚀 Ejecutando operación {signal.upper()}...", "green")
+                            resume_logger.log({"message": f"🚀 Ejecutando operación {signal.upper()}...", "type": "info"})
+                            SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal.upper())
+                        else:
+                            logger.color_text("⏸️ No se abre operación (señal NEUTRAL)", "yellow")
+                            resume_logger.log({"message": "⏸️ No se abre operación (señal NEUTRAL)", "type": "info"})
+                    else:
+                        logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
+                        resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
+                else:
+                    logger.color_text("⏸️ No se pudo obtener señal", "yellow")
+                    resume_logger.log({"message": "⏸️ No se pudo obtener señal", "type": "info"})                
+                logger.color_text(f"{'='*50}\n", "blue")
             
             time.sleep(1)
         
     except Exception as e:
         logger.color_text(f"❌ Error: {e}", "red")
-        resume_logger.log(f"❌ Error: {e}")
+        resume_logger.log({"message": f"❌ Error: {e}", "type": "error"})
     finally:
         logger.color_text("🔴 Bot finalizado", "red")
-        resume_logger.log("🔴 Bot finalizado")
+        resume_logger.log({"message": "🔴 Bot finalizado", "type": "info"})
 
 if __name__ == "__main__":
     main()

@@ -283,6 +283,7 @@ class SinglePositionSimulator:
         
         profits = []
         numTimes = 0
+        seconds = 1
 
         try:
             while True:
@@ -316,21 +317,20 @@ class SinglePositionSimulator:
 
                     if order.profit > 0:
                         profits.append(order.profit)
-                        if len(profits) >= 2:
-                            max_profit = max(profits)
-                            close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
-                            if order.profit < close_profit:  
-                                SinglePositionSimulator.close_position(order)
-                    elif order.profit < 0:
-                        print(f"🔴 Pérdida: {order.profit:.2f} USD")
+                        max_profit = max(profits)
+                        close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
+                        if order.profit < close_profit:  
+                            SinglePositionSimulator.close_position(order)
+                            SinglePositionSimulator.clear_positions()
+                            return;
+                    elif seconds >= 59:
                         numTimes += 1
-                        print(f"🔴 Times: {numTimes}")
-                        if numTimes >= 4:
-                            print(f"🔴 Times: {numTimes}")
+                        if (numTimes >= 4):
                             SinglePositionSimulator.close_position(order)
                             SinglePositionSimulator.clear_positions()
                             return
 
+                seconds += 1
                 time.sleep(1)
 
         except KeyboardInterrupt:
