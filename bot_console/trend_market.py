@@ -13,7 +13,7 @@ logger = Logger()
 resume_logger = ResumeJsonL(f"strategy_single_position_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
 
-class SimulatedOrder:
+class TrendMarketOrder:
     """Representa una operación abierta (simulada)."""
     def __init__(self, symbol, order_type, price_open, volume, sl_price, tp_price, position_id):
         self.symbol = symbol
@@ -44,31 +44,26 @@ class SimulatedOrder:
         }
 
 
-class SinglePositionSimulator:
+class TrendMarketSimulator:
     """
     Estrategia de posición simulada
     """
-
     open_positions = []
-    
+
     @staticmethod
-    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
+    def strategy_trend_market(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
         """
-        Estrategia principal de simulación.
+        Ejecuta la estrategia de posición simulada.
         """
-        logger.color_text("🔄 Iniciando simulación de ticks (60 segundos...)", "blue")
-        resume_logger.log("🔄 Iniciando simulación de ticks (60 segundos...")
-
+        logger.color_text(f"🚀 Ejecutando operación {signal.upper()}...", "green")
+        resume_logger.log({"message": f"🚀 Ejecutando operación {signal.upper()}...", "type": "info"})
+        
         if signal == LONG:
-            SinglePositionSimulator.open_long(symbol, volume)
+            TrendMarketSimulator.open_long(symbol, volume)
         elif signal == SHORT:
-            SinglePositionSimulator.open_short(symbol, volume)
-        else:
-            logger.color_text(f"No se abre operacion por tipo de señal: {signal}", "yellow")
-            resume_logger.log({"message": f"No se abre operacion por tipo de señal: {signal}", "type": "warning"})
-            return
-
-        SinglePositionSimulator.monitor_positions(symbol)
+            TrendMarketSimulator.open_short(symbol, volume)
+        
+        TrendMarketSimulator.monitor_positions(symbol)
 
     # ------------------- Funciones short, long and close -------------------
 
@@ -121,8 +116,6 @@ class SinglePositionSimulator:
             }
             # Enviar la orden
             result = mt5.order_send(request)
-            
-            SinglePositionSimulator.price = price_open
 
             if result is None:
                 last_error = mt5.last_error()
@@ -130,8 +123,8 @@ class SinglePositionSimulator:
                 resume_logger.log({"message": f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "type": "error"})
                 return False
 
-            order = SimulatedOrder(symbol, "long", price_open, volume, sl_price, tp_price, position_id=result.order)
-            SinglePositionSimulator.open_positions.append(order)
+            order = TrendMarketOrder(symbol, "long", price_open, volume, sl_price, tp_price, position_id=result.order)
+            TrendMarketSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 logger.color_text(f"❌ Error al abrir LONG: {result.retcode} | msj: {result.comment}", "red")
@@ -199,16 +192,14 @@ class SinglePositionSimulator:
             # Enviar la orden
             result = mt5.order_send(request)
             
-            SinglePositionSimulator.price = price_open
-            
             if result is None:
                 last_error = mt5.last_error()
                 logger.color_text(f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "red")
                 resume_logger.log({"message": f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "type": "error"})
                 return False
                 
-            order = SimulatedOrder(symbol, "short", price_open, volume, sl_price, tp_price, position_id=result.order)
-            SinglePositionSimulator.open_positions.append(order)
+            order = TrendMarketOrder(symbol, "short", price_open, volume, sl_price, tp_price, position_id=result.order)
+            TrendMarketSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 logger.color_text(f"❌ Error al abrir SHORT: {result.retcode} | msj: {result.comment}", "red")
@@ -269,7 +260,7 @@ class SinglePositionSimulator:
     def clear_positions():
         """Limpia las posiciones abiertas."""
         # Limpiar posiciones cerradas y retornar para nueva simulación
-        SinglePositionSimulator.open_positions = [pos for pos in SinglePositionSimulator.open_positions if not pos.closed]
+        TrendMarketSimulator.open_positions = [pos for pos in TrendMarketSimulator.open_positions if not pos.closed]
         
         logger.color_text("🔄 Preparando nueva simulación...\n", "blue")
         resume_logger.log({"message": "🔄 Preparando nueva simulación...\n", "type": "info"})
@@ -299,7 +290,7 @@ class SinglePositionSimulator:
                 current_bid = tick.bid
                 current_ask = tick.ask
 
-                for order in SinglePositionSimulator.open_positions:
+                for order in TrendMarketSimulator.open_positions:
                     if order.closed:
                         continue
                         
@@ -320,14 +311,14 @@ class SinglePositionSimulator:
                         max_profit = max(profits)
                         close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
                         if order.profit < close_profit:  
-                            SinglePositionSimulator.close_position(order)
-                            SinglePositionSimulator.clear_positions()
+                            TrendMarketSimulator.close_position(order)
+                            TrendMarketSimulator.clear_positions()
                             return;
                     elif seconds >= 59:
                         numTimes += 1
                         if (numTimes >= 4):
-                            SinglePositionSimulator.close_position(order)
-                            SinglePositionSimulator.clear_positions()
+                            TrendMarketSimulator.close_position(order)
+                            TrendMarketSimulator.clear_positions()
                             return
 
                 seconds += 1
@@ -337,27 +328,3 @@ class SinglePositionSimulator:
             logger.color_text("\n🛑 Simulación detenida por el usuario.", "red")
             resume_logger.log({"message": "\n🛑 Simulación detenida por el usuario.", "type": "info"})
             return
-    # ------------------- Funciones recovery profit -------------------
-
-    @staticmethod
-    def get_opposite_type(type):
-        if type == "long":
-            return "short"
-        elif type == "short":
-            return "long"
-        else:
-            return "neutral"
-
-    @staticmethod
-    def recovery_profit(lostProfit, currentType, order):
-        """Recupera el profit perdido."""
-        logger.color_text(f"🔴 Pérdida: -{lostProfit:.2f} USD", "red")
-        resume_logger.log({"message": f"🔴 Pérdida: -{lostProfit:.2f} USD", "type": "error"})
-
-        oppositeType = SinglePositionSimulator.get_opposite_type(currentType)
-        if (oppositeType == "long"):
-            SinglePositionSimulator.open_long(order.symbol, order.price_open, order.volume * 2)
-        elif (oppositeType == "short"):
-            SinglePositionSimulator.open_short(order.symbol, order.price_open, order.volume * 2)
-
-
