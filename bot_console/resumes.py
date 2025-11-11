@@ -1,7 +1,7 @@
 import os
 import json
 
-class ResumeLogger:
+class ResumeJsonL:
     def __init__(self, strategy_name):
         self.strategy_name = strategy_name
         self.log_dir = os.path.join(os.path.dirname(__file__), 'resumes')

@@ -4,7 +4,7 @@ import numpy as np
 import time
 from scipy.stats import linregress
 
-class EURUSD1MPredictor:
+class CandleGenerator:
     def __init__(self, symbol="EURUSD"):
         """
         Inicializa el predictor con el símbolo y el tiempo de la última vela.

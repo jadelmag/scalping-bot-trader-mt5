@@ -5,7 +5,10 @@ import time
 import threading
 from datetime import datetime
 from bot_console.single_position import SinglePositionSimulator
-from bot_console.predict_candle import EURUSD1MPredictor
+from bot_console.predict_candle import CandleGenerator
+from bot_console.candle_stick import CandleStick
+from bot_console.logger import Logger
+from bot_console.resumes import ResumeJsonL
 
 # Añadir el directorio actual al path de Python
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -27,49 +30,70 @@ default_timeframe = os.getenv("TIMEFRAME", "1")
 symbol = os.getenv("SYMBOL", "EURUSD")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
 
+resume_logger = ResumeJsonL("main")
+logger = Logger()
+
 # Tu código principal modificado
-VOLUME = 10.0
+VOLUME = 0.5
 def main():
     """Función principal optimizada"""
     try:
-        print("🚀 Iniciando Bot de Trading EURUSD 1M")
-        print("🎯 Modo: Solo señales SHORT/LONG con alta confianza")
+        logger.color_text("🚀 Iniciando Bot de Trading EURUSD 1M", "blue")
+        resume_logger.log("🚀 Iniciando Bot de Trading EURUSD 1M")
+        logger.color_text("🎯 Modo: Solo señales SHORT/LONG con alta confianza", "blue")
+        resume_logger.log("🎯 Modo: Solo señales SHORT/LONG con alta confianza")
         
         login = LoginMT5()
         connected = login.login()
         
         if not connected:
-            print("❌ No se pudo conectar a MetaTrader 5.")
+            logger.color_text("❌ No se pudo conectar a MetaTrader 5.", "red")
+            resume_logger.log("❌ No se pudo conectar a MetaTrader 5.")
             return
         
-        print("✅ Conectado a MetaTrader 5")
+        logger.color_text("✅ Conectado a MetaTrader 5", "green")
+        resume_logger.log("✅ Conectado a MetaTrader 5")
         
         mt5_client = MetaTrader5()
         mt5_client.getGlobalInfo()
 
         # Inicializar modelo
-        print("🔄 Inicializando modelo...")
-        predictor = EURUSD1MPredictor(symbol=symbol)
+        logger.color_text("🔄 Inicializando modelo...", "blue")
+        resume_logger.log("🔄 Inicializando modelo...")
+        candle_generator = CandleGenerator(symbol=symbol)
+        candle_stick = CandleStick(symbol=symbol)
 
         while True:            
             # luego en el loop
-            new_candle, candle_time = predictor.check_new_candle()
+            new_candle, candle_time = candle_generator.check_new_candle()
 
             if new_candle:
-                print(f"\n{'='*50}")
-                print(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
+                previus_candle = candle_stick.get_type_signal_when_candle_finish()
+                logger.color_text(f"🕯️ Prvius Candle was: {previus_candle}")
+                resume_logger.log(f"🕯️ Prvius Candle was: {previus_candle}")
 
-                # Ejecutar estrategia
-                SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME)
+                logger.color_text(f"\n{'='*50}")
+                resume_logger.log(f"\n{'='*50}")
+                logger.color_text(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
+                resume_logger.log(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
                 
-                print(f"{'='*50}")
+                signal = candle_stick.predict_short_or_long_candle()
+                logger.color_text(f"Signal: {signal}")
+                resume_logger.log(f"Signal: {signal}")
+                # Ejecutar estrategia
+                # SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal)
+                
+                logger.color_text(f"{'='*50}")
+                resume_logger.log(f"{'='*50}")
             
             time.sleep(1)
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.color_text(f"❌ Error: {e}", "red")
+        resume_logger.log(f"❌ Error: {e}")
     finally:
-        print("🔴 Bot finalizado")
+        logger.color_text("🔴 Bot finalizado", "red")
+        resume_logger.log("🔴 Bot finalizado")
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,12 @@
 import time
 import pandas as pd
 import MetaTrader5 as mt5
-from .resumes import ResumeLogger
-from .predict_candle import EURUSD1MPredictor
+from bot_console.resumes import ResumeJsonL
+from bot_console.logger import Logger
 
 LONG = "LONG"
 SHORT = "SHORT"
+NEUTRAL = "NEUTRAL"
 
 class SimulatedOrder:
     """Representa una operación abierta (simulada)."""
@@ -42,61 +43,25 @@ class SinglePositionSimulator:
     """
     Estrategia de posición simulada
     """
+    logger = Logger()
     open_positions = []
-    lostMoney = 0
-    recoveryProfit = False
-    resume_logger = ResumeLogger("strategy_single_position")
+    resume_logger = ResumeJsonL("strategy_single_position")
 
     @staticmethod
-    def color_text(text, color="red"):
-        colors = {
-            "red": "\033[91m",
-            "green": "\033[92m",
-            "yellow": "\033[93m",
-            "blue": "\033[94m",
-            "magenta": "\033[95m",
-            "cyan": "\033[96m",
-            "white": "\033[97m",
-            "reset": "\033[0m"
-        }
-        return f"{colors.get(color, '')}{text}{colors['reset']}"
-
-    @staticmethod
-    def getPriceFromLastCandle(symbol="EURUSD", timeframe=mt5.TIMEFRAME_M1):
-        """
-        Obtiene el precio de cierre de la última vela completa
-        """
-        if not mt5.initialize():
-            print("Error inicializando MT5")
-            return None
-    
-        try:
-            # Obtener las últimas 2 velas (necesitamos la penúltima para confirmar cierre)
-            rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 1)
-            if rates is None or len(rates) < 1:
-                print("No se pudieron obtener los datos")
-                return None
-            
-            # La última vela completa es la penúltima en el array
-            lastCandle = rates[-1]
-            priceClose = lastCandle['close']
-            
-            print(f"Último cierre {symbol}: {priceClose}")
-            return priceClose
-            
-        except Exception as e:
-            print(f"Error: {e}")
-            return None
-
-    @staticmethod
-    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01):
+    def strategy_single_position(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
         """
         Estrategia principal de simulación.
         """
         print(SinglePositionSimulator.color_text("🔄 Iniciando simulación de ticks (60 segundos...)", "blue"))
+        SinglePositionSimulator.resume_logger.log_resume("🔄 Iniciando simulación de ticks (60 segundos...)")
 
-        SinglePositionSimulator.open_long(symbol, volume)
-        SinglePositionSimulator.open_short(symbol, volume)
+        if signal == LONG:
+            SinglePositionSimulator.open_long(symbol, volume)
+        elif signal == SHORT:
+            SinglePositionSimulator.open_short(symbol, volume)
+        else:
+            SinglePositionSimulator.resume_logger.color_text(f"No se abre operacion por tipo de señal: {signal}", "yellow")
+            return
 
         SinglePositionSimulator.monitor_positions(symbol)
 
@@ -109,19 +74,19 @@ class SinglePositionSimulator:
             # Obtener información actual del símbolo
             symbol_info = mt5.symbol_info(symbol)
             if symbol_info is None:
-                print(SinglePositionSimulator.color_text(f"❌ No se pudo obtener información para {symbol}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ No se pudo obtener información para {symbol}", "red")
                 return False
             
             # Verificar si el símbolo está disponible para trading
             if not symbol_info.visible:
                 if not mt5.symbol_select(symbol, True):
-                    print(SinglePositionSimulator.color_text(f"❌ No se puede seleccionar {symbol}", "red"))
+                    SinglePositionSimulator.resume_logger.color_text(f"❌ No se puede seleccionar {symbol}", "red")
                     return False
             
             # Obtener el precio actual
             tick = mt5.symbol_info_tick(symbol)
             if tick is None:
-                print(SinglePositionSimulator.color_text(f"❌ No se pudo obtener el tick para {symbol}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ No se pudo obtener el tick para {symbol}", "red")
                 return False
             
             # Calcular SL y TP
@@ -153,22 +118,22 @@ class SinglePositionSimulator:
 
             if result is None:
                 last_error = mt5.last_error()
-                print(SinglePositionSimulator.color_text(f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "red")
                 return False
 
             order = SimulatedOrder(symbol, "long", price_open, volume, sl_price, tp_price, position_id=result.order)
             SinglePositionSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
-                print(SinglePositionSimulator.color_text(f"❌ Error al abrir LONG: {result.retcode} | msj: {result.comment}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ Error al abrir LONG: {result.retcode} | msj: {result.comment}", "red")
                 return False
             else:
-                print(SinglePositionSimulator.color_text(f"✅ LONG abierto | Ticket: {result.order} | {symbol} @ {price_open:.5f}", "green"))
-                print(SinglePositionSimulator.color_text(f"✅ SL: {sl_price:.5f} | TP: {tp_price:.5f} | Volumen: {volume}", "green"))
+                SinglePositionSimulator.resume_logger.color_text(f"✅ LONG abierto | Ticket: {result.order} | {symbol} @ {price_open:.5f}", "green")
+                SinglePositionSimulator.resume_logger.color_text(f"✅ SL: {sl_price:.5f} | TP: {tp_price:.5f} | Volumen: {volume}", "green")
                 return True
                 
         except Exception as e:
-            print(SinglePositionSimulator.color_text(f"❌ Error en open_long: {e}", "red"))
+            SinglePositionSimulator.resume_logger.color_text(f"❌ Error en open_long: {e}", "red")
             return False
 
     @staticmethod
@@ -178,19 +143,19 @@ class SinglePositionSimulator:
             # Obtener información actual del símbolo
             symbol_info = mt5.symbol_info(symbol)
             if symbol_info is None:
-                print(SinglePositionSimulator.color_text(f"❌ No se pudo obtener información para {symbol}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ No se pudo obtener información para {symbol}", "red")
                 return False
             
             # Verificar si el símbolo está disponible para trading
             if not symbol_info.visible:
                 if not mt5.symbol_select(symbol, True):
-                    print(SinglePositionSimulator.color_text(f"❌ No se puede seleccionar {symbol}", "red"))
+                    SinglePositionSimulator.resume_logger.color_text(f"❌ No se puede seleccionar {symbol}", "red")
                     return False
             
             # Obtener el precio actual usando el módulo mt5 directamente
             tick = mt5.symbol_info_tick(symbol)
             if tick is None:
-                print(SinglePositionSimulator.color_text(f"❌ No se pudo obtener el tick para {symbol}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ No se pudo obtener el tick para {symbol}", "red")
                 return False
             
             # Calcular SL y TP
@@ -222,22 +187,22 @@ class SinglePositionSimulator:
             
             if result is None:
                 last_error = mt5.last_error()
-                print(SinglePositionSimulator.color_text(f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "red")
                 return False
                 
             order = SimulatedOrder(symbol, "short", price_open, volume, sl_price, tp_price, position_id=result.order)
             SinglePositionSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
-                print(SinglePositionSimulator.color_text(f"❌ Error al abrir SHORT: {result.retcode} | msj: {result.comment}", "red"))
+                SinglePositionSimulator.resume_logger.color_text(f"❌ Error al abrir SHORT: {result.retcode} | msj: {result.comment}", "red")
                 return False
             else:
-                print(SinglePositionSimulator.color_text(f"✅ SHORT abierto | Ticket: {result.order} | {symbol} @ {price_open:.5f}", "green"))
-                print(SinglePositionSimulator.color_text(f"✅ SL: {sl_price:.5f} | TP: {tp_price:.5f} | Volumen: {volume}", "green"))
+                SinglePositionSimulator.resume_logger.color_text(f"✅ SHORT abierto | Ticket: {result.order} | {symbol} @ {price_open:.5f}", "green")
+                SinglePositionSimulator.resume_logger.color_text(f"✅ SL: {sl_price:.5f} | TP: {tp_price:.5f} | Volumen: {volume}", "green")
                 return True
                 
         except Exception as e:
-            print(SinglePositionSimulator.color_text(f"❌ Error en open_short: {e}", "red"))
+            SinglePositionSimulator.resume_logger.color_text(f"❌ Error en open_short: {e}", "red")
             return False
 
     @staticmethod
@@ -267,28 +232,14 @@ class SinglePositionSimulator:
         result = mt5.order_send(close_request)
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
-            print(SinglePositionSimulator.color_text(f"❌ Error al cerrar posición: {result.retcode} | {result.comment}", "red"))
-            SinglePositionSimulator.resume_logger.log({"message": f"❌ Error al cerrar posición: {result.retcode} | {result.comment}"})
+            SinglePositionSimulator.resume_logger.color_text(f"❌ Error al cerrar posición: {result.retcode} | {result.comment}", "red")
             return False
 
         order.closed = True
         order.price_close = close_price
         order.close_time = mt5.symbol_info_tick(symbol).time if mt5.symbol_info_tick(symbol) else None
 
-        if (SinglePositionSimulator.recoveryProfit):
-            lost = SinglePositionSimulator.lostMoney
-            total = order.profit - lost
-
-            print(SinglePositionSimulator.color_text(f"✅ Cierre REAL {order.type.upper()} @ {close_price:.5f} | Profit: {order.profit:.2f} USD | Perdido: -{lost:.2f} USD | Total: {total:.2f} USD", "green"))
-            SinglePositionSimulator.resume_logger.log({"message": f"✅ Cierre REAL {order.type.upper()} @ {close_price:.5f} | Profit: {order.profit:.2f} USD | Perdido: -{lost:.2f} USD | Total: {total:.2f} USD"})
-            
-            SinglePositionSimulator.recoveryProfit = False
-            SinglePositionSimulator.lostMoney = 0
-            SinglePositionSimulator.clear_positions()
-        else:
-            print(SinglePositionSimulator.color_text(f"✅ Cierre REAL {order.type.upper()} @ {close_price:.5f} | Profit: {order.profit:.2f} USD", "green"))
-            SinglePositionSimulator.resume_logger.log({"message": f"✅ Cierre REAL {order.type.upper()} @ {close_price:.5f} | Profit: {order.profit:.2f} USD"})
-    
+        SinglePositionSimulator.resume_logger.color_text(f"✅ Cierre REAL {order.type.upper()} @ {close_price:.5f} | Profit: {order.profit:.2f} USD", "green")
         return True
 
     @staticmethod
@@ -297,8 +248,7 @@ class SinglePositionSimulator:
         # Limpiar posiciones cerradas y retornar para nueva simulación
         SinglePositionSimulator.open_positions = [pos for pos in SinglePositionSimulator.open_positions if not pos.closed]
         
-        print(SinglePositionSimulator.color_text("🔄 Preparando nueva simulación...\n", "blue"))
-        SinglePositionSimulator.resume_logger.log({"message": "🔄 Preparando nueva simulación..."})
+        SinglePositionSimulator.resume_logger.color_text("🔄 Preparando nueva simulación...\n", "blue")
 
     # ------------------- Monitoring -------------------
 
@@ -309,6 +259,7 @@ class SinglePositionSimulator:
         
         profits = []
         numTimes = 0
+
         try:
             while True:
                 # Obtener el precio actual del mercado
@@ -335,22 +286,21 @@ class SinglePositionSimulator:
                     elif order.type == "short":
                         order.profit = (order.price_open - current_price) * 100000 * order.volume
     
-                    print(SinglePositionSimulator.color_text(f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "blue"))
+                    SinglePositionSimulator.resume_logger.color_text(f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "blue")
 
                     if order.profit > 0:
                         profits.append(order.profit)
                         if len(profits) >= 2:
                             max_profit = max(profits)
                             close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
-                            print(f" Max Profit: {max_profit:.2f} | Close Profit: {close_profit:.2f}")
                             if order.profit < close_profit:  
                                 SinglePositionSimulator.close_position(order)
-                                SinglePositionSimulator.clear_positions()
-                                return
                     elif order.profit < 0:
+                        print(f"🔴 Pérdida: {order.profit:.2f} USD")
                         numTimes += 1
-                        if numTimes >= 2:
-                            print(f"🔴 Pérdida: {order.profit:.2f} USD | Times: {numTimes}")
+                        print(f"🔴 Times: {numTimes}")
+                        if numTimes >= 4:
+                            print(f"🔴 Times: {numTimes}")
                             SinglePositionSimulator.close_position(order)
                             SinglePositionSimulator.clear_positions()
                             return
@@ -358,7 +308,7 @@ class SinglePositionSimulator:
                 time.sleep(1)
 
         except KeyboardInterrupt:
-            print(SinglePositionSimulator.color_text("\n🛑 Simulación detenida por el usuario.", "red"))
+            SinglePositionSimulator.resume_logger.color_text("\n🛑 Simulación detenida por el usuario.", "red")
             return
     # ------------------- Funciones recovery profit -------------------
 
@@ -374,10 +324,7 @@ class SinglePositionSimulator:
     @staticmethod
     def recovery_profit(lostProfit, currentType, order):
         """Recupera el profit perdido."""
-        print(SinglePositionSimulator.color_text(f"🔴 Pérdida: -{lostProfit:.2f} USD", "red"))
-
-        SinglePositionSimulator.lostMoney = lostProfit
-        SinglePositionSimulator.recoveryProfit = True
+        SinglePositionSimulator.resume_logger.color_text(f"🔴 Pérdida: -{lostProfit:.2f} USD", "red")
 
         oppositeType = SinglePositionSimulator.get_opposite_type(currentType)
         if (oppositeType == "long"):
