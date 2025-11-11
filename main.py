@@ -68,9 +68,14 @@ def main():
             new_candle, candle_time = candle_generator.check_new_candle()
 
             if new_candle:
-                signal, pattern = candle_stick.get_type_signal_when_candle_finish()
-                logger.color_text(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}", "blue")
-                resume_logger.log(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}")
+                result = candle_stick.get_type_signal_when_candle_finish()
+                if result is not None:
+                    signal, pattern = result
+                    logger.color_text(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}", "blue")
+                    resume_logger.log(f"🕯️ Vela anterior -> SEÑAL: {signal} -> PATRÓN: {pattern}")
+                else:
+                    logger.color_text("🕯️ No hay nueva vela cerrada para analizar", "yellow")
+                    resume_logger.log("🕯️ No hay nueva vela cerrada para analizar")
 
                 logger.color_text(f"\n{'='*50}", "blue")
                 resume_logger.log(f"\n{'='*50}")
@@ -78,10 +83,10 @@ def main():
                 resume_logger.log(f"🕯️ Vela: {candle_time.strftime('%H:%M:%S')}")
                 
                 signal = candle_stick.predict_short_or_long_candle()
-                logger.color_text(f"Signal: {signal}", "blue")
-                resume_logger.log(f"Signal: {signal}")
+                logger.color_text(f"SEÑAL PARA ABRIR OPERACIÓN: {signal}", "blue")
+                resume_logger.log(f"SEÑAL PARA ABRIR OPERACIÓN: {signal}")
                 # Ejecutar estrategia
-                # SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal)
+                SinglePositionSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal)
                 
                 logger.color_text(f"{'='*50}", "blue")
                 resume_logger.log(f"{'='*50}")

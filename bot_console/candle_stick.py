@@ -21,14 +21,18 @@ class CandleStick:
         return df
 
     def update(self):
-        """Actualiza el historial con la vela más reciente."""
-        new_candle = mt5.copy_rates_from_pos(self.symbol, mt5.TIMEFRAME_M1, 0, 1)
-        # print(f"new_candle: {new_candle}")
-        if new_candle is not None:
-            new_df = pd.DataFrame(new_candle)
-            new_df['time'] = pd.to_datetime(new_df['time'], unit='s')
-            if self.df['time'].iloc[-1] != new_df['time'].iloc[-1]:
-                self.df = pd.concat([self.df, new_df]).iloc[-self.n_candles:]
+        """Actualiza el historial con la última vela cerrada."""
+        rates = mt5.copy_rates_from_pos(self.symbol, mt5.TIMEFRAME_M1, 0, 2)
+        if rates is None or len(rates) < 2:
+            return self.df
+
+        df_new = pd.DataFrame(rates)
+        df_new['time'] = pd.to_datetime(df_new['time'], unit='s')
+
+        last_closed = df_new.iloc[-2]  # La vela cerrada más reciente
+
+        if self.df['time'].iloc[-1] != last_closed['time']:
+            self.df = pd.concat([self.df, pd.DataFrame([last_closed])]).iloc[-self.n_candles:]
         return self.df
 
     # ------------------- FUNCIONES DE DETECCIÓN -------------------
@@ -99,7 +103,12 @@ class CandleStick:
         return None
 
     def is_doji(self, c):
-        if abs(c['open'] - c['close']) <= (c['high'] - c['low']) * 0.1:
+        body = abs(c['open'] - c['close'])
+        total = c['high'] - c['low']
+        if total == 0:
+            return None
+        ratio = body / total
+        if ratio <= 0.05:  # antes 0.1
             return ("DOJI", "NEUTRAL")
         return None
 
@@ -234,21 +243,17 @@ class CandleStick:
 
     def get_type_signal_when_candle_finish(self):
         """
-        Detecta la señal de la vela cuando termina realmente.
-        Retorna None si la vela aún no ha cerrado; si ha cerrado, analiza
-        la vela anterior (cerrada) y devuelve la señal.
+        Detecta la señal cuando la vela termina realmente.
+        Retorna None si no hay nueva vela cerrada.
         """
-        # tiempo de la última vela conocida
         last_time = self.df['time'].iloc[-1]
-
-        # actualizar (self.df se actualiza dentro)
         updated_df = self.update()
 
-        # Si todavía estamos en la misma vela, no hacer nada
+        # Si no hay vela nueva, no hacemos nada
         if updated_df['time'].iloc[-1] == last_time:
-            return None  # la vela actual no se ha cerrado todavía
+            return None
 
-        # Apareció una nueva vela -> la vela cerrada es la penúltima
-        pattern, signal = self.detect_pattern(offset=1)
-        print(f"✅ Vela cerrada detectada: {updated_df['time'].iloc[-2]} → Patrón: {pattern}, Señal: {signal}")
+        # Analizar la última vela cerrada
+        pattern, signal = self.detect_pattern(offset=0)
+        print(f"✅ Vela cerrada: {updated_df['time'].iloc[-1]} → Patrón: {pattern}, Señal: {signal}")
         return signal, pattern
