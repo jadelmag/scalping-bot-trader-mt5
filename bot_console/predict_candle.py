@@ -47,9 +47,9 @@ class CandleGenerator:
         close_price = last_closed['close']
 
         if close_price > open_price:
-            return "buy"
+            return "LONG"
         elif close_price < open_price:
-            return "sell"
+            return "SHORT"
         else:
-            return "neutral"
+            return "NEUTRAL"
 
