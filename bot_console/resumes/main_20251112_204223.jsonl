@@ -1,0 +1,17 @@
+{"message": "🔮 Señal predicha para vela 21:43:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 21:43:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 21:44:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 21:44:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 21:45:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 21:45:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 21:46:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 21:46:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 21:47:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 21:47:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 21:48:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 21:48:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 21:49:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 21:49:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 21:50:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 21:50:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 21:51:00: SHORT", "type": "info"}
