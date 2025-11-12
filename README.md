@@ -1,191 +1,202 @@
 # 🤖 Scalping Bot Trader MT5
 
-**Un bot de trading automatizado para estrategias de scalping en el mercado Forex con simulación avanzada de precios**
+**Bot de trading automatizado profesional para MetaTrader 5 con estrategia de análisis de velas japonesas en tiempo real**
+
+[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
+[![MetaTrader5](https://img.shields.io/badge/MetaTrader5-5.0.5260-green.svg)](https://www.metatrader5.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 📋 Descripción
 
-Este proyecto implementa un sistema de trading automatizado especializado en estrategias de scalping para el par EUR/USD. El bot incluye un simulador de precios en tiempo real y dos estrategias principales de trading, diseñado para operar de forma autónoma con gestión de riesgo integrada.
+Bot de trading automatizado de consola que se conecta a MetaTrader 5 para ejecutar operaciones en tiempo real basadas en el análisis técnico de patrones de velas japonesas. El sistema monitorea continuamente el mercado EURUSD en timeframe M1, predice la dirección de nuevas velas y valida sus predicciones con resultados reales.
 
 ## ✨ Características Principales
 
-- **🎯 Estrategias de Trading Duales**
-  - **Single Position**: Análisis de tendencia y apertura de posición única
-  - **Dual Position**: Apertura simultánea de posiciones long/short para capturar movimientos
+### 🎯 **Estrategia de Trading Avanzada**
+- **Análisis de Patrones de Velas**: Evaluación detallada de mechas superiores e inferiores
+- **Predicción en Tiempo Real**: Genera señales LONG/SHORT/NEUTRAL para cada nueva vela
+- **Validación Automática**: Compara predicciones con resultados reales de velas cerradas
+- **Timeframes Configurables**: Soporte para M1, M5, M15, M30, H1, H4, D1
 
-- **📊 Simulador de Mercado Avanzado**
-  - Simulación realista de precios EUR/USD
-  - Tendencias dinámicas con cambios aleatorios
-  - Actualización en tiempo real cada segundo
+### 📊 **Integración con MetaTrader 5**
+- **Conexión Segura**: Autenticación mediante variables de entorno
+- **Ejecución de Órdenes Reales**: Apertura automática de posiciones LONG/SHORT
+- **Gestión de Riesgo**: Stop Loss (200 pips) y Take Profit (300 pips) automáticos
+- **Monitoreo en Tiempo Real**: Seguimiento continuo de P&L de posiciones abiertas
 
-- **🛡️ Gestión de Riesgo Integrada**
-  - Stop Loss automático (200 pips)
-  - Take Profit automático (300 pips)
-  - Sistema de recuperación de pérdidas
-  - Monitoreo continuo de posiciones
+### 🛡️ **Sistema de Gestión de Posiciones**
+- **Apertura Inteligente**: Basada en análisis de 14 patrones de velas diferentes
+- **Cierre Automático**: Por tiempo (58 segundos) o por SL/TP
+- **Cálculo de Profit**: Actualización en tiempo real del beneficio/pérdida
+- **Prevención de Duplicados**: Control de velas ya procesadas
 
-- **📈 Sistema de Logging Completo**
-  - Registro detallado de todas las operaciones
-  - Formato JSON estructurado
-  - Seguimiento de rendimiento por estrategia
+### 📈 **Logging y Reportes Completos**
+- **Logs en Consola**: Salida colorizada con emojis para fácil seguimiento
+- **Archivos JSONL**: Registro estructurado de todas las operaciones
+- **Timestamps Precisos**: Seguimiento temporal de cada evento
+- **Métricas de Rendimiento**: Validación de señales correctas/incorrectas
 
 ## 🏗️ Arquitectura del Sistema
 
 ```
 scalping-bot-trader-mt5/
-├── main.py                 # Punto de entrada principal
-├── randomizer/
-│   └── randomizer.py       # Simulador de precios EUR/USD
-├── strategies/
-│   ├── single_position.py  # Estrategia de posición única
-│   └── dual_position.py    # Estrategia de posición dual
-└── resumes/
-    └── resumes.py          # Sistema de logging y reportes
+├── main.py                              # Punto de entrada principal
+├── bot_console/
+│   ├── __init__.py                      # Inicializador del módulo
+│   ├── login.py                         # Autenticación MT5
+│   ├── metatrader5.py                   # Wrapper de MT5
+│   ├── predict_candle.py                # Generador y detector de velas
+│   ├── candle_stick_strategy.py         # Estrategia de análisis de velas
+│   ├── market_order.py                  # Gestión de órdenes y posiciones
+│   ├── logger.py                        # Sistema de logging colorizado
+│   └── resumes.py                       # Exportación de logs JSONL
+├── old_code/                            # Versiones anteriores
+├── .env                                 # Variables de entorno (credenciales)
+├── requirements.txt                     # Dependencias del proyecto
+└── README.md                            # Documentación
 ```
 
 ## 🚀 Instalación y Configuración
 
 ### Requisitos del Sistema
-- Python 3.7+
-- Librerías estándar de Python (time, random, threading, json, os)
 
-### Instalación
+- **Python**: 3.7 o superior
+- **MetaTrader 5**: Instalado y configurado
+- **Sistema Operativo**: Windows (recomendado para MT5)
+- **Conexión a Internet**: Para datos de mercado en tiempo real
+
+### Dependencias
+
+```txt
+MetaTrader5==5.0.5260
+pandas>=2.3.2
+numpy>=2.2.6
+python-dotenv>=1.0.0
+scipy>=1.11.0
+```
+
+### Instalación Paso a Paso
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/tu-usuario/scalping-bot-trader-mt5.git
+   git clone https://github.com/jadelmag/scalping-bot-trader-mt5.git
    cd scalping-bot-trader-mt5
    ```
 
-2. **Instalar dependencias**
+2. **Crear entorno virtual (recomendado | opcional)**
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   # source venv/bin/activate  # Linux/Mac
+   ```
+
+3. **Instalar dependencias**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Agregar .env y sus variables**
-   ```bash
-   MT5_ACCOUNT=""
-   MT5_PASSWORD=""
-   MT5_SERVER=""
+4. **Configurar variables de entorno**
+   
+   Crear archivo `.env` en la raíz del proyecto:
+   ```env
+   # Credenciales de MetaTrader 5
+   MT5_ACCOUNT=12345678
+   MT5_PASSWORD=tu_contraseña_segura
+   MT5_SERVER=nombre_del_servidor
+   
+   # Configuración de trading (opcional)
+   SYMBOL=EURUSD
+   TIMEFRAME=1
    ```
 
-4. **Ejecutar el bot**
+5. **Verificar instalación de MetaTrader 5**
    ```bash
-   python main.py
+   python -c "import MetaTrader5 as mt5; print('MT5 Version:', mt5.version())"
    ```
 
 ## 📖 Uso del Sistema
 
 ### Ejecución Básica
 
-El bot se ejecuta de forma continua realizando simulaciones automáticas:
-
-```python
-# El bot iniciará automáticamente con metatrader5
+```bash
 python main.py
 ```
 
-### Ejecución de Simulación
+### Flujo de Operación
 
-```python
-# El bot iniciará automáticamente con la configuración por defecto
-python simulation/main.py
+1. **Inicialización**
+   - Conexión a MetaTrader 5 con credenciales del `.env`
+   - Verificación de cuenta y balance
+   - Inicialización de generadores de velas y estrategia
+
+2. **Monitoreo Continuo**
+   - Detección de nuevas velas cada segundo
+   - Análisis de la última vela cerrada
+   - Generación de señal predictiva (LONG/SHORT/NEUTRAL)
+
+3. **Validación de Predicciones**
+   - Comparación de señal predicha vs resultado real
+   - Registro de aciertos/errores en logs
+   - Actualización de métricas de rendimiento
+
+4. **Ejecución de Operaciones** (actualmente comentado)
+   - Apertura de posición según señal
+   - Configuración automática de SL/TP
+   - Monitoreo de P&L en tiempo real
+
+### Salida de Consola
+
+```
+🚀 Iniciando Bot de Trading EURUSD 1M
+🎯 Estrategia: Operar al inicio de nueva vela basado en patrón de vela cerrada
+🔗 Inicializando MetaTrader 5...
+✅ Conexión a MetaTrader 5 establecida correctamente
+   👤 Cuenta: 12345678
+   💼 Broker: XM Global Limited
+   🌐 Servidor: XMGlobal-MT5
+   💰 Balance: $10000.00
+🔄 Inicializando modelo...
+
+==================================================
+🕯️ NUEVA VELA INICIADA: 14:23:00
+✅ Señal correcta para vela 14:22:00 → LONG
+🕯 Precio de cierre: Close: 1.08456
+⬆ Mecha superior: 0.00012 (Sí)
+⬇ Mecha inferior: 0.00008 (Sí)
+🔮 Señal predicha para vela 14:23:00: SHORT
 ```
 
-### Configuración de Estrategias
+## 🔧 Componentes Técnicos
 
-**Single Position Strategy:**
-- Analiza 60 segundos de datos de precio
-- Determina tendencia a los 40 segundos
-- Abre posición basada en análisis técnico
-- Monitorea hasta cierre por profit/loss
+### 1. **LoginMT5** (`login.py`)
 
-**Dual Position Strategy:**
-- Abre simultáneamente posiciones long y short
-- Evalúa rendimiento a los 40 segundos
-- Continúa con la posición ganadora
-- Cierra automáticamente por trailing stop
+Gestiona la autenticación y conexión con MetaTrader 5.
 
-### Parámetros Configurables
+**Métodos principales:**
+- `login()`: Establece conexión con MT5
+- `get_connection_info()`: Obtiene información de la cuenta
+- `logout()`: Cierra la conexión
+- `test_connection()`: Verifica conectividad
 
-```python
-# En main.py
-volume = 10.0  # Volumen de trading
-symbol = "EURUSD"  # Par de divisas
+### 2. **CandleGenerator** (`predict_candle.py`)
 
-# En las estrategias
-sl_pips = 200  # Stop Loss en pips
-tp_pips = 300  # Take Profit en pips
-```
+Detecta nuevas velas y obtiene datos históricos.
 
-## 📊 Monitoreo y Reportes
+**Métodos principales:**
+- `check_new_candle()`: Detecta inicio de nueva vela
+- `get_candles(n)`: Obtiene últimas n velas
+- `get_signal_for_last_candle()`: Determina dirección de vela cerrada
 
-### Logs en Tiempo Real
-El sistema genera logs detallados en formato JSON:
+### 3. **CandleStickStrategy** (`candle_stick_strategy.py`)
 
-```json
-{
-  "message": "✅ LONG abierto | EURUSD @ 1.15367 | SL: 1.15167 | TP: 1.15667",
-  "order": {
-    "symbol": "EURUSD",
-    "type": "long",
-    "price_open": 1.15367,
-    "volume": 10.0,
-    "profit": 0.0
-  }
-}
-```
+Analiza patrones de velas para generar señales de trading.
 
-### Archivos de Log
-- `resumes/single_position/single_position.jsonl`
-- `resumes/dual_position/dual_position.jsonl`
+### 4. **MarketSimulator** (`market_order.py`)
 
-## 🔧 Funcionalidades Técnicas
+Gestiona la apertura, cierre y monitoreo de posiciones.
 
-### Análisis de Tendencias
-- **Análisis de cambio total**: Compara precio inicial vs final
-- **Análisis step-by-step**: Evalúa cada movimiento consecutivo
-- **Detección de volatilidad**: Identifica rangos de precio significativos
-
-### Gestión de Posiciones
-- **Apertura automática**: Basada en señales técnicas
-- **Monitoreo continuo**: Cálculo de P&L en tiempo real
-- **Cierre inteligente**: Por trailing stop o stop loss
-- **Recuperación de pérdidas**: Sistema de martingala modificado
-
-## ⚠️ Consideraciones Importantes
-
-- **Modo Simulación**: Actualmente opera con datos simulados
-- **Gestión de Riesgo**: Siempre utiliza stop loss y take profit
-- **Monitoreo Requerido**: Supervisión recomendada durante operación
-- **Backtesting**: Prueba exhaustiva antes de implementación real
-
-## 🛠️ Desarrollo y Contribución
-
-### Estructura de Clases Principales
-
-- `EURUSD_Simulator`: Generador de precios simulados
-- `SinglePositionSimulator`: Estrategia de posición única
-- `DualPositionSimulator`: Estrategia de posición dual
-- `SimulatedOrder`: Representación de órdenes de trading
-- `SinglePositionLogger`: Sistema de logging especializado
-
-### Extensibilidad
-
-El sistema está diseñado para fácil extensión:
-- Agregar nuevas estrategias en `/strategies`
-- Implementar nuevos simuladores en `/randomizer`
-- Personalizar logging en `/resumes`
-
-## 📝 Licencia
-
-Este proyecto está bajo licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 📞 Soporte
-
-Para reportar bugs o solicitar características:
-- Crear un issue en GitHub
-- Contactar al equipo de desarrollo
-
----
-
-**⚡ Desarrollado para traders que buscan automatización inteligente en estrategias de scalping**
+**Métodos principales:**
+- `open_long(symbol, volume, sl_pips, tp_pips)`: Abre posición de compra
+- `open_short(symbol, volume, sl_pips, tp_pips)`: Abre posición de venta
+- `close_position(order)`: Cierra posición abierta
+- `monitor_positions(symbol)`

@@ -60,7 +60,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
                     logger.color_text(f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")
                     resume_logger.log({"message": f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "type": "info"})
                 else:
-                    if (prev_signal.upper() == "NEUTRAL"):
+                    if (real_signal.upper() == "NEUTRAL"):
                         logger.color_text(f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "yellow")
                         resume_logger.log({"message": f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "type": "info"})
                     else:
