@@ -107,8 +107,6 @@ class CandleStickStrategy:
         print(f"open_price: {open_price}")
 
         wick_diff = self.getDiffWick(upper_wick, lower_wick, high_price, close_price)
-        close_to_high = self.getCloseToHigh(high_price, close_price)
-        close_to_low = self.getCloseToLow(low_price, close_price)
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
             # --- Comprobar si funciona y sino dejarla en neutral
