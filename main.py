@@ -8,6 +8,7 @@ from bot_console.predict_candle import CandleGenerator
 from bot_console.candle_stick_strategy import CandleStickStrategy
 from bot_console.logger import Logger
 from bot_console.resumes import ResumeJsonL
+from bot_console.market_order import MarketSimulator
 
 # Añadir el directorio actual al path de Python
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -57,26 +58,33 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
                 # Comparar
                 if real_signal == prev_signal:
                     logger.color_text(f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")
+                    resume_logger.log({"message": f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "type": "info"})
                 else:
-                    logger.color_text(f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "red")
+                    if (prev_signal.upper() == "NEUTRAL"):
+                        logger.color_text(f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "yellow")
+                        resume_logger.log({"message": f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "type": "info"})
+                    else:
+                        logger.color_text(f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "red")
+                        resume_logger.log({"message": f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "type": "error"})
 
             # Obtener la señal para la nueva vela
             predicted_signal = candle_stick_strategy.get_signal_for_new_candle()
             logger.color_text(f"🔮 Señal predicha para vela {candle_time.strftime('%H:%M:%S')}: {predicted_signal}", "yellow")
+            resume_logger.log({"message": f"🔮 Señal predicha para vela {candle_time.strftime('%H:%M:%S')}: {predicted_signal}", "type": "info"})
 
             # Guardar la predicción actual para comparar en la próxima iteración
             last_prediction = (predicted_signal, candle_time)
 
-            # Evitar procesar la misma vela múltiples veces
+            # # Evitar procesar la misma vela múltiples veces
             # if last_processed_candle != candle_time:
             #     last_processed_candle = candle_time
 
-            #     logger.color_text(f"🚀 Ejecutando operación {signal.upper()}...", "green")
-            #     resume_logger.log({"message": f"🚀 Ejecutando operación {signal.upper()}...", "type": "info"})
-            #     BearishHaramiSimulator.strategy_single_position(symbol=symbol, volume=VOLUME, signal=signal.upper())    
-        # else:
-        #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
-        #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
+            #     logger.color_text(f"🚀 Ejecutando operación {predicted_signal.upper()}...", "green")
+            #     resume_logger.log({"message": f"🚀 Ejecutando operación {predicted_signal.upper()}...", "type": "info"})
+            #     MarketSimulator.strategy_success_order(symbol=symbol, volume=VOLUME, signal=predicted_signal.upper())    
+        else:
+            logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
+            resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
         time.sleep(1)
 
@@ -112,9 +120,6 @@ def main():
     except Exception as e:
         logger.color_text(f"❌ Error: {e}", "red")
         resume_logger.log({"message": f"❌ Error: {e}", "type": "error"})
-    finally:
-        logger.color_text("🔴 Bot finalizado", "red")
-        resume_logger.log({"message": "🔴 Bot finalizado", "type": "info"})
 
 if __name__ == "__main__":
     main()

@@ -13,7 +13,7 @@ logger = Logger()
 resume_logger = ResumeJsonL(f"strategy_single_position_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
 
-class TrendMarketOrder:
+class MarketOrder:
     """Representa una operación abierta (simulada)."""
     def __init__(self, symbol, order_type, price_open, volume, sl_price, tp_price, position_id):
         self.symbol = symbol
@@ -44,14 +44,14 @@ class TrendMarketOrder:
         }
 
 
-class TrendMarketSimulator:
+class MarketSimulator:
     """
     Estrategia de posición simulada
     """
     open_positions = []
 
     @staticmethod
-    def strategy_trend_market(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
+    def strategy_success_order(symbol: str="EURUSD", volume: float=0.01, signal: str="NEUTRAL"):
         """
         Ejecuta la estrategia de posición simulada.
         """
@@ -59,11 +59,15 @@ class TrendMarketSimulator:
         resume_logger.log({"message": f"🚀 Ejecutando operación {signal.upper()}...", "type": "info"})
         
         if signal == LONG:
-            TrendMarketSimulator.open_long(symbol, volume)
+            MarketSimulator.open_long(symbol, volume)
         elif signal == SHORT:
-            TrendMarketSimulator.open_short(symbol, volume)
+            MarketSimulator.open_short(symbol, volume)
+        else:
+            logger.color_text(f"Señal: {signal} | No se abre operación", "yellow")
+            resume_logger.log({"message": f"Señal: {signal} | No se abre operación", "type": "info"})
+            return
         
-        TrendMarketSimulator.monitor_positions(symbol)
+        MarketSimulator.monitor_positions(symbol)
 
     # ------------------- Funciones short, long and close -------------------
 
@@ -123,8 +127,8 @@ class TrendMarketSimulator:
                 resume_logger.log({"message": f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "type": "error"})
                 return False
 
-            order = TrendMarketOrder(symbol, "long", price_open, volume, sl_price, tp_price, position_id=result.order)
-            TrendMarketSimulator.open_positions.append(order)
+            order = MarketOrder(symbol, "long", price_open, volume, sl_price, tp_price, position_id=result.order)
+            MarketSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 logger.color_text(f"❌ Error al abrir LONG: {result.retcode} | msj: {result.comment}", "red")
@@ -198,8 +202,8 @@ class TrendMarketSimulator:
                 resume_logger.log({"message": f"❌ Error: No se pudo enviar la orden. MT5 Error: {last_error}", "type": "error"})
                 return False
                 
-            order = TrendMarketOrder(symbol, "short", price_open, volume, sl_price, tp_price, position_id=result.order)
-            TrendMarketSimulator.open_positions.append(order)
+            order = MarketOrder(symbol, "short", price_open, volume, sl_price, tp_price, position_id=result.order)
+            MarketSimulator.open_positions.append(order)
 
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 logger.color_text(f"❌ Error al abrir SHORT: {result.retcode} | msj: {result.comment}", "red")
@@ -260,7 +264,7 @@ class TrendMarketSimulator:
     def clear_positions():
         """Limpia las posiciones abiertas."""
         # Limpiar posiciones cerradas y retornar para nueva simulación
-        TrendMarketSimulator.open_positions = [pos for pos in TrendMarketSimulator.open_positions if not pos.closed]
+        MarketSimulator.open_positions = [pos for pos in MarketSimulator.open_positions if not pos.closed]
         
         logger.color_text("🔄 Preparando nueva simulación...\n", "blue")
         resume_logger.log({"message": "🔄 Preparando nueva simulación...\n", "type": "info"})
@@ -272,8 +276,6 @@ class TrendMarketSimulator:
         """Monitorea las posiciones abiertas en tiempo real."""
         print("📈 Monitoreando operaciones... (presiona Ctrl+C para detener)")
         
-        profits = []
-        numTimes = 0
         seconds = 1
 
         try:
@@ -290,7 +292,7 @@ class TrendMarketSimulator:
                 current_bid = tick.bid
                 current_ask = tick.ask
 
-                for order in TrendMarketSimulator.open_positions:
+                for order in MarketSimulator.open_positions:
                     if order.closed:
                         continue
                         
@@ -306,21 +308,11 @@ class TrendMarketSimulator:
                     logger.color_text(f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "blue")
                     resume_logger.log({"message": f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "type": "info"})
 
-                    if order.profit > 0:
-                        profits.append(order.profit)
-                        max_profit = max(profits)
-                        close_profit = max_profit * 0.90 # Si el profit baja un 10% del máximo
-                        if order.profit < close_profit:  
-                            TrendMarketSimulator.close_position(order)
-                            TrendMarketSimulator.clear_positions()
-                            return;
-                    elif seconds < 59:
-                        numTimes += 1
-                        if (numTimes >= 4):
-                            TrendMarketSimulator.close_position(order)
-                            TrendMarketSimulator.clear_positions()
-                            return
-
+                    if seconds > 58:
+                        MarketSimulator.close_position(order)
+                        MarketSimulator.clear_positions()
+                        return;
+ 
                 seconds += 1
                 time.sleep(1)
 
