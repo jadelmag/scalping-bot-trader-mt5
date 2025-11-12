@@ -77,10 +77,8 @@ class CandleStickStrategy:
 
         # diferencia real entre mechas
         real_wick_diff = abs(upper_wick - lower_wick)
-        print(f"real_wick_diff: {real_wick_diff:.5f}")
 
         diff = real_wick_diff <= wick_diff_tolerance
-        print(f"getDiffWick: {diff}")
         return diff
 
     def get_signal_for_new_candle(self):
@@ -106,35 +104,39 @@ class CandleStickStrategy:
         print(f"close_price: {close_price}")
         print(f"open_price: {open_price}")
 
-        wick_diff = self.getDiffWick(upper_wick, lower_wick, high_price, close_price)
+        hasWickDiff = self.getDiffWick(upper_wick, lower_wick, high_price, close_price)
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
             # --- Comprobar si funciona y sino dejarla en neutral
-        if (has_upper_wick and has_lower_wick and open_price == close_price and upper_wick > lower_wick):
-            print(f"1: tiene mechas y se abre y cierra en el mismo precio")
-            return "LONG"
-        elif (has_upper_wick and has_lower_wick and open_price == close_price and lower_wick < upper_wick):
-            print(f"2: tiene mechas y se abre y cierra en el mismo precio")
-            return "SHORT"
+        if (has_upper_wick and has_lower_wick and open_price == close_price):
+            diff_wick = (upper_wick + lower_wick) / 2.0
+            print(f"1: diff_wick: {diff_wick:.5f}")
+            if (diff_wick >= 0.00002):
+                print(f"1: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
+                return "SHORT"
+            else:
+                print(f"2: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es pequeña")
+                return "LONG"
+            
         elif (has_upper_wick and has_lower_wick and open_price == close_price and upper_wick == lower_wick):
-            print(f"3: tiene mechas y se abre y cierra en el mismo precio")
+            print(f"3: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es igual")
             return "NEUTRAL"
         
         # --- Tienen mecha superior e inferior, la diferencia entre mechas es pequeña
         
-        elif (has_upper_wick and has_lower_wick and wick_diff and close_price > open_price): 
+        elif (has_upper_wick and has_lower_wick and hasWickDiff and close_price > open_price): 
             print(f"4: tiene mechas y se cierra cerca del máximo")
             return "SHORT"
-        elif (has_upper_wick and has_lower_wick and wick_diff and close_price < open_price):
+        elif (has_upper_wick and has_lower_wick and hasWickDiff and close_price < open_price):
             print(f"5: tiene mechas y se cierra cerca del mínimo")
             return "LONG"
 
         # --- Tienen mecha superior e inferior, la diferencia entre mechas es grande
 
-        elif (has_upper_wick and has_lower_wick and not wick_diff):
-            diff_wick = upper_wick - lower_wick
+        elif (has_upper_wick and has_lower_wick and not hasWickDiff):
+            diff_wick = (upper_wick + lower_wick) / 2.0
             print(f"diff_wick: {diff_wick:.5f}")
-            if (lower_wick < upper_wick and diff_wick > 0.00004):
+            if (lower_wick < upper_wick and diff_wick >= 0.00002):
                 print(f"6: tiene mechas y la mecha inferior es mayor que la superior") 
                 return "SHORT"
             else:
@@ -155,7 +157,7 @@ class CandleStickStrategy:
         elif (has_upper_wick and not has_lower_wick):
             diff_wick = (upper_wick + lower_wick) / 2.0
             print(f"12: diff_wick: {diff_wick:.5f}")
-            if (lower_wick < upper_wick and diff_wick > 0.00004):
+            if (lower_wick < upper_wick and diff_wick >= 0.00002):
                 print(f"12: tiene mecha superior y la mecha inferior es mayor que la superior")
                 return "SHORT"
             else:
@@ -167,7 +169,7 @@ class CandleStickStrategy:
         elif (not has_upper_wick and has_lower_wick):
             diff_wick = (upper_wick + lower_wick) / 2.0
             print(f"13: diff_wick: {diff_wick:.5f}")
-            if (lower_wick > upper_wick and diff_wick > 0.00004):
+            if (lower_wick > upper_wick and diff_wick >= 0.00002):
                 print(f"14: tiene mecha inferior y la mecha inferior es mayor que la superior")
                 return "SHORT"
             else:
