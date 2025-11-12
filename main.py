@@ -82,9 +82,9 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
             #     logger.color_text(f"🚀 Ejecutando operación {predicted_signal.upper()}...", "green")
             #     resume_logger.log({"message": f"🚀 Ejecutando operación {predicted_signal.upper()}...", "type": "info"})
             #     MarketSimulator.strategy_success_order(symbol=symbol, volume=VOLUME, signal=predicted_signal.upper())    
-        else:
-            logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
-            resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
+            # else:
+            #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
+            #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
         time.sleep(1)
 
