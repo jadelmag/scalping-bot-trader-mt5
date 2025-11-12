@@ -101,7 +101,7 @@ class CandleStickStrategy:
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
-            if (lower_wick < upper_wick):
+            if (upper_wick > lower_wick):
                 print(f"1: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
                 return SIGNAL_SHORT
             else:
