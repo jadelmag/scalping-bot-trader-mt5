@@ -122,10 +122,10 @@ class CandleStickStrategy:
                 return SIGNAL_SHORT
             if (upper_wick > lower_wick):
                 print(f"4.2: tienen ambas mechas y la mecha superior es mayor que la inferior")
-                return SIGNAL_SHORT
+                return SIGNAL_LONG
             else:
                 print(f"4.3: tienen ambas mechas y la mecha inferior es mayor que la superior")
-                return SIGNAL_LONG
+                return SIGNAL_SHORT
 
         # --- No tiene mecha superior ni inferior
 
