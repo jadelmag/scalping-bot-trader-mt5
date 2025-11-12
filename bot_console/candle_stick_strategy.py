@@ -122,10 +122,10 @@ class CandleStickStrategy:
                 return SIGNAL_SHORT
             if (upper_wick > lower_wick):
                 print(f"4.2: tienen ambas mechas y la mecha superior es mayor que la inferior")
-                return SIGNAL_LONG
+                return SIGNAL_SHORT
             else:
                 print(f"4.3: tienen ambas mechas y la mecha inferior es mayor que la superior")
-                return SIGNAL_SHORT
+                return SIGNAL_LONG
 
         # --- No tiene mecha superior ni inferior
 
@@ -139,14 +139,14 @@ class CandleStickStrategy:
         # --- Tienen mecha superior y no mecha inferior
 
         elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): 
-            if (lower_wick == 0 and upper_wick > 0.00010):
+            if (lower_wick == 0):
                 print(f"9: tiene mecha superior y se cierra cerca del máximo")
                 return SIGNAL_SHORT
             print(f"9: tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_LONG
+            return SIGNAL_SHORT
         elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
             print(f"10: tiene mecha superior y se cierra cerca del mínimo")
-            return SIGNAL_SHORT
+            return SIGNAL_LONG
 
         # --- No tiene mecha inferior y tienen mecha superior
 
@@ -154,9 +154,9 @@ class CandleStickStrategy:
             print(f"11: no tiene mecha superior y se cierra cerca del máximo")
             return SIGNAL_LONG
         elif (not has_upper_wick and has_lower_wick):
-            if (upper_wick == 0 and lower_wick >= 0.00010): # antes 0.00004
-                print(f"12: no tiene mecha superior y la mecha inferior es mayor a 6")
-                return SIGNAL_LONG
+            if (upper_wick == 0):
+                print(f"12: no tiene mecha superior")
+                return SIGNAL_SHORT
             elif (upper_wick < lower_wick):
                 print(f"13: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
                 return SIGNAL_SHORT
