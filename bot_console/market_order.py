@@ -277,6 +277,7 @@ class MarketSimulator:
         print("📈 Monitoreando operaciones... (presiona Ctrl+C para detener)")
         
         seconds = 1
+        profits = []
 
         try:
             while True:
@@ -308,11 +309,21 @@ class MarketSimulator:
                     logger.color_text(f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "blue")
                     resume_logger.log({"message": f"💰 {order.symbol} | {order.type.upper()} | Entrada: {order.price_open:.5f} | Actual: {current_price:.5f} | Profit: {order.profit:.4f} USD", "type": "info"})
 
-                    if seconds > 58:
+                    # Si el profit cae más del 10% del máximo reciente → cerrar
+                    if order.profit > 0:
+                        profits.append(order.profit)
+                        if (len(profits) >= 4 and order.profit > max(profits) * 0.90):
+                            MarketSimulator.close_position(order)
+                            MarketSimulator.clear_positions()
+                            logger.color_text("🔻 Posición cerrada por pérdida del 10% del máximo.", "yellow")
+                            resume_logger.log({"message": "🔻 Posición cerrada por pérdida del 10% del máximo.", "type": "info"})
+                            return
+                    if (seconds == 49):
                         MarketSimulator.close_position(order)
                         MarketSimulator.clear_positions()
-                        return;
- 
+                        logger.color_text("🔻 Posición cerrada por tiempo.", "yellow")
+                        resume_logger.log({"message": "🔻 Posición cerrada por tiempo.", "type": "info"})
+                        return
                 seconds += 1
                 time.sleep(1)
 

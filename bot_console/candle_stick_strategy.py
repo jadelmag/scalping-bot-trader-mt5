@@ -101,7 +101,7 @@ class CandleStickStrategy:
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
-            if (upper_wick > lower_wick):
+            if (lower_wick < upper_wick):
                 print(f"1: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
                 return SIGNAL_SHORT
             else:
@@ -115,17 +115,12 @@ class CandleStickStrategy:
         # --- Tienen mecha superior e inferior
 
         elif (has_upper_wick and has_lower_wick):
-            diffWick = upper_wick - lower_wick
-            print(f"diffWick: {diffWick:.5f}")
-            if abs(diffWick) > 0.00004:
-                print(f"4.1: tienen ambas mechas y la diferencia entre mechas es media")
+            if (upper_wick > lower_wick):
+                print(f"4: tienen ambas mechas y se cierra cerca del mínimo")
                 return SIGNAL_SHORT
-            if (lower_wick > upper_wick):
-                print(f"4.2: tienen ambas mechas y la mecha superior es mayor que la inferior")
-                return SIGNAL_LONG
             else:
-                print(f"4.3: tienen ambas mechas y la mecha inferior es mayor que la superior")
-                return SIGNAL_SHORT
+                print(f"5: tienen ambas mechas y se cierra cerca del mínimo")
+                return SIGNAL_LONG
 
         # --- No tiene mecha superior ni inferior
 
@@ -139,14 +134,11 @@ class CandleStickStrategy:
         # --- Tienen mecha superior y no mecha inferior
 
         elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): 
-            if (lower_wick == 0):
-                print(f"9: tiene mecha superior y se cierra cerca del máximo")
-                return SIGNAL_SHORT
             print(f"9: tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_SHORT
+            return SIGNAL_LONG
         elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
             print(f"10: tiene mecha superior y se cierra cerca del mínimo")
-            return SIGNAL_LONG
+            return SIGNAL_SHORT
 
         # --- No tiene mecha inferior y tienen mecha superior
 
@@ -154,9 +146,9 @@ class CandleStickStrategy:
             print(f"11: no tiene mecha superior y se cierra cerca del máximo")
             return SIGNAL_LONG
         elif (not has_upper_wick and has_lower_wick):
-            if (upper_wick == 0):
-                print(f"12: no tiene mecha superior")
-                return SIGNAL_SHORT
+            if (upper_wick == 0 and lower_wick >= 0.00010): # antes 0.00004
+                print(f"12: no tiene mecha superior y la mecha inferior es mayor a 6")
+                return SIGNAL_LONG
             elif (upper_wick < lower_wick):
                 print(f"13: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
                 return SIGNAL_SHORT
@@ -165,5 +157,4 @@ class CandleStickStrategy:
                 return SIGNAL_LONG
     
         else:
-            print(f"15: No arriesgamos | Operación Neutral")
             return SIGNAL_NONE
