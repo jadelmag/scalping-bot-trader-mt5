@@ -1,6 +1,0 @@
-{"message": "⏸️ No se abre operación (tendencia NEUTRAL)", "type": "info"}
-{"message": "⏸️ No se abre operación (tendencia NEUTRAL)", "type": "info"}
-{"message": "⏸️ No se abre operación (tendencia NEUTRAL)", "type": "info"}
-{"message": "🚀 Ejecutando operación SHORT...", "type": "info"}
-{"message": "❌ Error: type object 'TrendMarketSimulator' has no attribute 'strategy_trend_market'", "type": "error"}
-{"message": "🔴 Bot finalizado", "type": "info"}

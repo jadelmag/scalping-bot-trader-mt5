@@ -314,7 +314,7 @@ class TrendMarketSimulator:
                             TrendMarketSimulator.close_position(order)
                             TrendMarketSimulator.clear_positions()
                             return;
-                    elif seconds >= 59:
+                    elif seconds < 59:
                         numTimes += 1
                         if (numTimes >= 4):
                             TrendMarketSimulator.close_position(order)
