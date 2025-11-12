@@ -36,6 +36,8 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
     """
     Estrategia sticks.
     """
+    last_prediction = None  # guarda la última predicción y su hora
+
     while True:
         # Verificar si hay nueva vela
         new_candle, candle_time = candle_generator.check_new_candle()
@@ -44,9 +46,26 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
             logger.color_text(f"\n{'='*50}", "blue")
             logger.color_text(f"🕯️ NUEVA VELA INICIADA: {candle_time.strftime('%H:%M:%S')}", "cyan")
             
+
+            # Si teníamos una predicción anterior, verificar si fue correcta
+            if last_prediction is not None:
+                prev_signal, prev_time = last_prediction
+
+                # Obtener la dirección real de la vela cerrada (la previa)
+                real_signal = candle_generator.get_signal_for_last_candle()
+
+                # Comparar
+                if real_signal == prev_signal:
+                    logger.color_text(f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")
+                else:
+                    logger.color_text(f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "red")
+
             # Obtener la señal para la nueva vela
-            signal = candle_stick_strategy.get_signal_for_new_candle()
-            logger.color_text(f"Signal: {signal}", "blue")
+            predicted_signal = candle_stick_strategy.get_signal_for_new_candle()
+            logger.color_text(f"🔮 Señal predicha para vela {candle_time.strftime('%H:%M:%S')}: {predicted_signal}", "yellow")
+
+            # Guardar la predicción actual para comparar en la próxima iteración
+            last_prediction = (predicted_signal, candle_time)
 
             # Evitar procesar la misma vela múltiples veces
             # if last_processed_candle != candle_time:

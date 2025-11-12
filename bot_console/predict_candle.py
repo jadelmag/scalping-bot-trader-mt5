@@ -34,3 +34,22 @@ class CandleGenerator:
             return True, last_time
 
         return False, last_time
+
+    def get_signal_for_last_candle(self):
+        """
+        Retorna 'buy' si la última vela CERRADA es alcista,
+        'sell' si es bajista, o 'neutral' si open == close.
+        """
+        df = self.get_candles(3)  # pedimos 3 por seguridad
+        last_closed = df.iloc[-2]  # la penúltima vela está cerrada
+
+        open_price = last_closed['open']
+        close_price = last_closed['close']
+
+        if close_price > open_price:
+            return "buy"
+        elif close_price < open_price:
+            return "sell"
+        else:
+            return "neutral"
+
