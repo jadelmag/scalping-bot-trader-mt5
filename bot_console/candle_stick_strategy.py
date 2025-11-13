@@ -160,38 +160,41 @@ class CandleStickStrategy:
 
         # --- No tiene mecha superior ni inferior
 
-        # elif (not has_upper_wick and not has_lower_wick and upper_wick > lower_wick):
-        #     print(f"06: no tiene mechas y se cierra cerca del máximo")
-        #     return SIGNAL_LONG, "06", info
-        # elif (not has_upper_wick and not has_lower_wick and lower_wick < upper_wick):
-        #     print(f"07: no tiene mechas y se cierra cerca del mínimo")
-        #     return SIGNAL_SHORT, "07", info
+        elif (not has_upper_wick and not has_lower_wick and upper_wick > lower_wick):
+            print(f"09: no tiene mechas y se cierra cerca del máximo")
+            return SIGNAL_LONG, "09", info
+        elif (not has_upper_wick and not has_lower_wick and lower_wick < upper_wick):
+            print(f"10: no tiene mechas y se cierra cerca del mínimo")
+            return SIGNAL_SHORT, "10", info
+        elif (not has_upper_wick and not has_lower_wick and upper_wick == lower_wick):
+            print(f"11: no tiene mechas y se cierra cerca del mínimo")
+            return SIGNAL_SHORT, "11", info
 
         # --- Tienen mecha superior y no mecha inferior
 
-        # elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): 
-        #     print(f"08: tiene mecha superior y se cierra cerca del máximo")
-        #     return SIGNAL_LONG, "08", info
-        # elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
-        #     print(f"09: tiene mecha superior y se cierra cerca del mínimo")
-        #     return SIGNAL_SHORT, "09", info
+        elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): 
+            print(f"12: tiene mecha superior y se cierra cerca del máximo")
+            return SIGNAL_LONG, "12", info
+        elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
+            print(f"13: tiene mecha superior y se cierra cerca del mínimo")
+            return SIGNAL_SHORT, "13", info
 
         # --- No tiene mecha inferior y tienen mecha superior
 
-        # elif (not has_upper_wick and has_lower_wick and upper_wick > lower_wick):
-        #     print(f"10: no tiene mecha superior y se cierra cerca del máximo")
-        #     return SIGNAL_LONG, "10", info
-        # elif (not has_upper_wick and has_lower_wick):
-        #     if (upper_wick == 0 and close_price > open_price): # antes 0.00004
-        #         print(f"11: no tiene mecha superior y la mecha inferior es mayor a 10")
-        #         return SIGNAL_LONG, "11", info
-        #     elif (upper_wick < lower_wick):
-        #         print(f"12: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
-        #         return SIGNAL_SHORT, "12", info
-        #     else:
-        #         print(f"13: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
-        #         return SIGNAL_LONG, "13", info
+        elif (not has_upper_wick and has_lower_wick and upper_wick > lower_wick):
+            print(f"14: no tiene mecha superior y se cierra cerca del máximo")
+            return SIGNAL_LONG, "14", info
+        elif (not has_upper_wick and has_lower_wick):
+            if (upper_wick == 0 and close_price > open_price): # antes 0.00004
+                print(f"15: no tiene mecha superior y la mecha inferior es mayor a 10")
+                return SIGNAL_LONG, "15", info
+            elif (upper_wick < lower_wick):
+                print(f"16: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
+                return SIGNAL_SHORT, "16", info
+            else:
+                print(f"17: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
+                return SIGNAL_LONG, "17", info
     
         else:
-            print(f"14: no se cumple ninguna condición")
-            return SIGNAL_NONE, "14", info
+            print(f"18: no se cumple ninguna condición")
+            return SIGNAL_NONE, "18", info

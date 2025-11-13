@@ -13,6 +13,8 @@ class ResumeJsonL:
         """
         data: dict - datos a guardar e imprimir
         """
+        if self.blockMessages:
+            return
         # Guarda en el fichero en formato jsonl
         with open(self.log_path, 'a', encoding='utf-8') as f:
             f.write(json.dumps(data, ensure_ascii=False) + '\n')
