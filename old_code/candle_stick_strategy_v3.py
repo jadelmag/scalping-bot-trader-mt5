@@ -121,64 +121,79 @@ class CandleStickStrategy:
             "open_price": f"{open_price:.5f}"
         }
 
-        # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
+        # --- Tiene mecha superior e inferior, se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
-            if (lower_wick < upper_wick):
+            if (upper_wick > lower_wick):
                 print(f"01: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
-                return SIGNAL_SHORT, "01", info
+                return SIGNAL_LONG, "01", info
             else:
                 print(f"02: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es pequeña")
-                return SIGNAL_LONG, "02", info
-
+                return SIGNAL_SHORT, "02", info
         elif (has_upper_wick and has_lower_wick and open_price == close_price and upper_wick == lower_wick):
             print(f"03: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es igual")
             return SIGNAL_NONE, "03", info
         
         # --- Tienen mecha superior e inferior
 
-        elif (has_upper_wick and has_lower_wick):
-            if (upper_wick > lower_wick):
-                print(f"04: tienen ambas mechas y se cierra cerca del mínimo")
+        elif has_upper_wick and has_lower_wick:
+            if (upper_wick_prev == lower_wick_prev and close_price < open_price):
+                print(f"04: tienen mechas y la diferencia entre mechas es igual")
                 return SIGNAL_SHORT, "04", info
-            else:
-                print(f"05: tienen ambas mechas y se cierra cerca del mínimo") # CONFUSA
+            if (low_price_prev >=  0.00020 and upper_wick_prev <= upper_wick):
+                print(f"05: tienen mechas y la diferencia entre mechas es igual")
                 return SIGNAL_LONG, "05", info
+            if (upper_wick_prev >= upper_wick and lower_wick_prev < lower_wick):
+                print(f"06: tienen mechas y la diferencia entre mechas es igual")
+                return SIGNAL_LONG, "06", info
+            if (upper_wick_prev < upper_wick and lower_wick_prev > lower_wick):
+                print(f"07: tienen mechas y la diferencia entre mechas es igual") 
+                return SIGNAL_SHORT, "07", info
+            else:
+                print(f"08: tienen mechas y la diferencia entre mechas es igual")
+                return SIGNAL_LONG, "08", info
 
+             
         # --- No tiene mecha superior ni inferior
 
-        elif (not has_upper_wick and not has_lower_wick and upper_wick > lower_wick):
-            print(f"06: no tiene mechas y se cierra cerca del máximo")
-            return SIGNAL_LONG, "06", info
-        elif (not has_upper_wick and not has_lower_wick and lower_wick < upper_wick):
-            print(f"07: no tiene mechas y se cierra cerca del mínimo")
-            return SIGNAL_SHORT, "07", info
+        elif (not has_upper_wick and not has_lower_wick and close_price > open_price):
+            print(f"11: TEST")
+            return SIGNAL_SHORT, "11", info # CONFUSA
+        elif (not has_upper_wick and not has_lower_wick and close_price < open_price):
+            print(f"12: TEST")
+            return SIGNAL_LONG, "12", info
+        elif (not has_upper_wick and not has_lower_wick and close_price == open_price):
+            print(f"13: TEST")
+            return SIGNAL_NONE, "13", info
 
         # --- Tienen mecha superior y no mecha inferior
 
-        elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): # CONFUSA
-            print(f"08: tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_LONG, "08", info
-        elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
-            print(f"09: tiene mecha superior y se cierra cerca del mínimo")
-            return SIGNAL_SHORT, "09", info
+        elif (has_upper_wick and not has_lower_wick and upper_wick == 0):
+            print(f"14: TEST")
+            return SIGNAL_SHORT, "14", info
+        elif (has_upper_wick and not has_lower_wick and lower_wick_prev >= 0.00010 and lower_wick == 0):
+            print(f"15: TEST")
+            return SIGNAL_LONG, "15", info
+        elif (has_upper_wick and not has_lower_wick and upper_wick < 0.00005):
+            print(f"15: TEST")
+            return SIGNAL_SHORT, "15", info
 
-        # --- No tiene mecha inferior y tienen mecha superior
+        # --- No tiene mecha superior y tienen mecha inferior
 
         elif (not has_upper_wick and has_lower_wick and upper_wick > lower_wick):
-            print(f"10: no tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_LONG, "10", info
+            print(f"16: TEST")
+            return SIGNAL_LONG, "16", info
         elif (not has_upper_wick and has_lower_wick):
-            if (upper_wick == 0): # antes 0.00004
-                print(f"11: no tiene mecha superior y la mecha inferior es mayor a 10")
-                return SIGNAL_LONG, "11", info
-            elif (upper_wick < lower_wick):
-                print(f"12: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
-                return SIGNAL_SHORT, "12", info
+            if lower_wick < lower_wick_prev and upper_wick_prev > lower_wick_prev: 
+                print(f"17: TEST")
+                return SIGNAL_LONG, "17", info
+            elif lower_wick_prev >= lower_wick * 2:
+                print(f"18: TEST")
+                return SIGNAL_LONG, "18", info
             else:
-                print(f"13: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
-                return SIGNAL_LONG, "13", info
+                print(f"19: TEST")
+                return SIGNAL_LONG, "19", info
     
         else:
-            print(f"14: no se cumple ninguna condición")
-            return SIGNAL_NONE, "14", info
+            print(f"20: no se cumple ninguna condición")
+            return SIGNAL_NONE, "20", info
