@@ -13,6 +13,9 @@ class CandleGenerator:
         self.last_candle_time = None
 
     def get_candles(self, n=None):
+        """
+        Obtiene las últimas n velas cerradas
+        """
         n = n or self.history_n
         rates = mt5.copy_rates_from_pos(self.symbol, mt5.TIMEFRAME_M1, 0, n)
         if rates is None or len(rates) == 0:
@@ -22,6 +25,9 @@ class CandleGenerator:
         return df
 
     def check_new_candle(self):
+        """
+        Verifica si hay una nueva vela cerrada
+        """
         df = self.get_candles(2)
         last_time = df["time"].iloc[-1]
 

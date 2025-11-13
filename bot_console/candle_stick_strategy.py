@@ -8,11 +8,11 @@ no ejecuta operaciones.
 
 import MetaTrader5 as mt5
 import pandas as pd
+from enum import IntEnum
 
 SIGNAL_NONE = "NEUTRAL"
 SIGNAL_LONG = "LONG"
 SIGNAL_SHORT = "SHORT"
-
 
 class CandleStickStrategy:
     def __init__(self, symbol: str):
@@ -64,12 +64,15 @@ class CandleStickStrategy:
         upper_wick = high_price - candle_top
         lower_wick = candle_bottom - low_price
 
+        if abs(upper_wick - 0.00001) < 1e-6: upper_wick = 0
+        if abs(lower_wick - 0.00001) < 1e-6: lower_wick = 0
+
         has_upper_wick = upper_wick > 0
         has_lower_wick = lower_wick > 0
 
-        print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
-        print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
-        print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
+        # print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
+        # print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
+        # print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
 
         return upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price
 
@@ -88,73 +91,85 @@ class CandleStickStrategy:
 
         upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price = self.get_sticks_from_last_candle()
 
-        print(f"penultimate_candle: Close: {penultimate_candle['close']:.5f} | Open: {penultimate_candle['open']:.5f} | High: {penultimate_candle['high']:.5f} | Low: {penultimate_candle['low']:.5f}")
-        print(f"upper_wick: {upper_wick:.5f}")
-        print(f"lower_wick: {lower_wick:.5f}")
-        print(f"has_upper_wick: {has_upper_wick}")
-        print(f"has_lower_wick: {has_lower_wick}")
-        print(f"low_price: {low_price}")
-        print(f"high_price: {high_price}")
-        print(f"close_price: {close_price}")
-        print(f"open_price: {open_price}")
+        # print(f"penultimate_candle: Close: {penultimate_candle['close']:.5f} | Open: {penultimate_candle['open']:.5f} | High: {penultimate_candle['high']:.5f} | Low: {penultimate_candle['low']:.5f}")
+        # print(f"upper_wick: {upper_wick:.5f}")
+        # print(f"lower_wick: {lower_wick:.5f}")
+        # print(f"has_upper_wick: {has_upper_wick}")
+        # print(f"has_lower_wick: {has_lower_wick}")
+        # print(f"low_price: {low_price}")
+        # print(f"high_price: {high_price}")
+        # print(f"close_price: {close_price}")
+        # print(f"open_price: {open_price}")
+        info = {
+            "penultimate_candle": penultimate_candle,
+            "upper_wick": f"{upper_wick:.5f}",
+            "lower_wick": f"{lower_wick:.5f}",
+            "has_upper_wick": has_upper_wick,
+            "has_lower_wick": has_lower_wick,
+            "low_price": f"{low_price:.5f}",
+            "high_price": f"{high_price:.5f}",
+            "close_price": f"{close_price:.5f}",
+            "open_price": f"{open_price:.5f}"
+        }
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
             if (lower_wick < upper_wick):
-                print(f"1: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
-                return SIGNAL_SHORT
+                print(f"01: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
+                return SIGNAL_SHORT, "01", info
             else:
-                print(f"2: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es pequeña")
-                return SIGNAL_LONG
+                print(f"02: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es pequeña")
+                return SIGNAL_LONG, "02", info
 
         elif (has_upper_wick and has_lower_wick and open_price == close_price and upper_wick == lower_wick):
-            print(f"3: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es igual")
-            return SIGNAL_NONE
+            print(f"03: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es igual")
+            return SIGNAL_NONE, "03", info
         
         # --- Tienen mecha superior e inferior
 
         elif (has_upper_wick and has_lower_wick):
             if (upper_wick > lower_wick):
-                print(f"4: tienen ambas mechas y se cierra cerca del mínimo")
-                return SIGNAL_SHORT
+                print(f"04: tienen ambas mechas y se cierra cerca del mínimo")
+                return SIGNAL_SHORT, "04", info
             else:
-                print(f"5: tienen ambas mechas y se cierra cerca del mínimo")
-                return SIGNAL_LONG
+                print(f"05: tienen ambas mechas y se cierra cerca del mínimo")
+                return SIGNAL_LONG, "05", info
 
         # --- No tiene mecha superior ni inferior
 
         elif (not has_upper_wick and not has_lower_wick and upper_wick > lower_wick):
-            print(f"7: no tiene mechas y se cierra cerca del máximo")
-            return SIGNAL_LONG
+            print(f"06: no tiene mechas y se cierra cerca del máximo")
+            return SIGNAL_LONG, "06", info
         elif (not has_upper_wick and not has_lower_wick and lower_wick < upper_wick):
-            print(f"8: no tiene mechas y se cierra cerca del mínimo")
-            return SIGNAL_SHORT
+            print(f"07: no tiene mechas y se cierra cerca del mínimo")
+            return SIGNAL_SHORT, "07", info
 
         # --- Tienen mecha superior y no mecha inferior
 
         elif (has_upper_wick and not has_lower_wick and upper_wick > lower_wick): 
-            print(f"9: tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_LONG
+            print(f"08: tiene mecha superior y se cierra cerca del máximo")
+            return SIGNAL_LONG, "08", info
         elif (has_upper_wick and not has_lower_wick and upper_wick < lower_wick):
-            print(f"10: tiene mecha superior y se cierra cerca del mínimo")
-            return SIGNAL_SHORT
+            print(f"09: tiene mecha superior y se cierra cerca del mínimo")
+            return SIGNAL_SHORT, "09", info
 
         # --- No tiene mecha inferior y tienen mecha superior
 
         elif (not has_upper_wick and has_lower_wick and upper_wick > lower_wick):
-            print(f"11: no tiene mecha superior y se cierra cerca del máximo")
-            return SIGNAL_LONG
+            print(f"10: no tiene mecha superior y se cierra cerca del máximo")
+            return SIGNAL_LONG, "10", info
         elif (not has_upper_wick and has_lower_wick):
             if (upper_wick == 0): # antes 0.00004
-                print(f"12: no tiene mecha superior y la mecha inferior es mayor a 6")
-                return SIGNAL_LONG
+                print(f"11: no tiene mecha superior y la mecha inferior es mayor a 10")
+                return SIGNAL_LONG, "11", info
             elif (upper_wick < lower_wick):
-                print(f"13: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
-                return SIGNAL_SHORT
+                print(f"12: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
+                return SIGNAL_SHORT, "12", info
             else:
-                print(f"14: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
-                return SIGNAL_LONG
+                print(f"13: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
+                return SIGNAL_LONG, "13", info
     
         else:
-            return SIGNAL_NONE
+            print(f"14: no se cumple ninguna condición")
+            return SIGNAL_NONE, "14", info

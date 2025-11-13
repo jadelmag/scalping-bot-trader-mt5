@@ -1,0 +1,109 @@
+{"message": "🔮 Señal predicha para vela 10:25:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:25:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:26:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:26:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:27:00: NEUTRAL", "type": "info"}
+{"message": "⚠️ Operación no realizada para vela 10:27:00 → real=SHORT, pred=NEUTRAL", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:28:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:28:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:29:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:29:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:30:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:30:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:31:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:31:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:32:00: SHORT", "type": "info"}
+{"message": "⚠️ Operación no realizada para vela 10:32:00 → real=NEUTRAL, pred=SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:33:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:33:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:34:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:34:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:35:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:35:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:36:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:36:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:37:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:37:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:38:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:38:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:39:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:39:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:40:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:40:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:41:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:41:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:42:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:42:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:43:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:43:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:44:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:44:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:45:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:45:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:46:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:46:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:47:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:47:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:48:00: NEUTRAL", "type": "info"}
+{"message": "⚠️ Operación no realizada para vela 10:48:00 → real=SHORT, pred=NEUTRAL", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:49:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:49:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:50:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:50:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:51:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:51:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:52:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:52:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:53:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:53:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:54:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:54:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:55:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:55:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:56:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 10:56:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 10:57:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:57:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:58:00: SHORT", "type": "info"}
+{"message": "⚠️ Operación no realizada para vela 10:58:00 → real=NEUTRAL, pred=SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 10:59:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 10:59:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:00:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:00:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:01:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:01:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:02:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:02:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:03:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:03:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:04:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:04:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:05:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:05:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:06:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:06:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:07:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:07:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:08:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:08:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:09:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:09:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:10:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:10:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:11:00: SHORT", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:11:00 → real=LONG, pred=SHORT", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:12:00: SHORT", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:12:00 → SHORT", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:13:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:13:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:14:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:14:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:15:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:15:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:16:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:16:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:17:00: LONG", "type": "info"}
+{"message": "❌ Señal incorrecta para vela 11:17:00 → real=SHORT, pred=LONG", "type": "error"}
+{"message": "🔮 Señal predicha para vela 11:18:00: LONG", "type": "info"}
+{"message": "✅ Señal correcta para vela 11:18:00 → LONG", "type": "info"}
+{"message": "🔮 Señal predicha para vela 11:19:00: SHORT", "type": "info"}
