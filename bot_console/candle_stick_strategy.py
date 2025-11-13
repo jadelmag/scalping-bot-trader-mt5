@@ -47,12 +47,10 @@ class CandleStickStrategy:
             self.candles = self.get_last_two_candles()
         return self.candles[1]
 
-    def get_sticks_from_last_candle(self):
+    def get_sticks_from_candle(self, candle, last: bool = False):
         """
         Obtiene las mechas y datos de la última vela cerrada
         """
-        candle = self.get_last_candle()
-
         open_price = candle['open']
         high_price = candle['high']
         low_price = candle['low']
@@ -70,9 +68,16 @@ class CandleStickStrategy:
         has_upper_wick = upper_wick > 0
         has_lower_wick = lower_wick > 0
 
-        # print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
-        # print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
-        # print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
+        print("Última vela:" if last else "Penúltima vela:")
+        print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
+        print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
+        print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
+        print(f"has_upper_wick: {has_upper_wick}")
+        print(f"has_lower_wick: {has_lower_wick}")
+        print(f"low_price: {low_price}")
+        print(f"high_price: {high_price}")
+        print(f"close_price: {close_price}")
+        print(f"open_price: {open_price}")
 
         return upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price
 
@@ -89,22 +94,19 @@ class CandleStickStrategy:
         last_candle = self.get_last_candle()
         penultimate_candle = self.get_penultimate_candle()
 
-        upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price = self.get_sticks_from_last_candle()
+        upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev = self.get_sticks_from_candle(penultimate_candle, False)
 
-        # print(f"penultimate_candle: Close: {penultimate_candle['close']:.5f} | Open: {penultimate_candle['open']:.5f} | High: {penultimate_candle['high']:.5f} | Low: {penultimate_candle['low']:.5f}")
-        # print(f"upper_wick: {upper_wick:.5f}")
-        # print(f"lower_wick: {lower_wick:.5f}")
-        # print(f"has_upper_wick: {has_upper_wick}")
-        # print(f"has_lower_wick: {has_lower_wick}")
-        # print(f"low_price: {low_price}")
-        # print(f"high_price: {high_price}")
-        # print(f"close_price: {close_price}")
-        # print(f"open_price: {open_price}")
+        upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price = self.get_sticks_from_candle(last_candle, True)
+
         prev_candle_info = {
-            "Close": f"{penultimate_candle['close']:.5f}",
-            "Open": f"{penultimate_candle['open']:.5f}",
-            "High": f"{penultimate_candle['high']:.5f}",
-            "Low": f"{penultimate_candle['low']:.5f}"
+            "upper_wick": f"{upper_wick_prev:.5f}",
+            "lower_wick": f"{lower_wick_prev:.5f}",
+            "has_upper_wick": has_upper_wick_prev,
+            "has_lower_wick": has_lower_wick_prev,
+            "low_price": f"{low_price_prev:.5f}",
+            "high_price": f"{high_price_prev:.5f}",
+            "close_price": f"{close_price_prev:.5f}",
+            "open_price": f"{open_price_prev:.5f}"
         }
         info = {
             "penultimate_candle": prev_candle_info,
@@ -166,7 +168,7 @@ class CandleStickStrategy:
             print(f"10: no tiene mecha superior y se cierra cerca del máximo")
             return SIGNAL_LONG, "10", info
         elif (not has_upper_wick and has_lower_wick):
-            if (upper_wick == 0): # antes 0.00004
+            if (upper_wick == 0 and lower_wick < 0.00004): # antes 0.00004
                 print(f"11: no tiene mecha superior y la mecha inferior es mayor a 10")
                 return SIGNAL_LONG, "11", info
             elif (upper_wick < lower_wick):
