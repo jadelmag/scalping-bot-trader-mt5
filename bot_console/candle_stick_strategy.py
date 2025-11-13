@@ -100,8 +100,14 @@ class CandleStickStrategy:
         # print(f"high_price: {high_price}")
         # print(f"close_price: {close_price}")
         # print(f"open_price: {open_price}")
+        prev_candle_info = {
+            "Close": f"{penultimate_candle['close']:.5f}",
+            "Open": f"{penultimate_candle['open']:.5f}",
+            "High": f"{penultimate_candle['high']:.5f}",
+            "Low": f"{penultimate_candle['low']:.5f}"
+        }
         info = {
-            "penultimate_candle": penultimate_candle,
+            "penultimate_candle": prev_candle_info,
             "upper_wick": f"{upper_wick:.5f}",
             "lower_wick": f"{lower_wick:.5f}",
             "has_upper_wick": has_upper_wick,

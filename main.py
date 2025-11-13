@@ -53,22 +53,22 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
                 prev_signal, prev_time = last_prediction
 
                 # Obtener la dirección real de la vela cerrada (la previa)
-                real_signal, num_operation, info = candle_generator.get_signal_for_last_candle()
+                real_signal = candle_generator.get_signal_for_last_candle()
 
                 # Comparar
                 if real_signal == prev_signal:
                     logger.color_text(f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")
-                    resume_logger.log({"message": f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal} | {info}", "type": "info"})
+                    resume_logger.log({"message": f"✅ Señal correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "type": "info"})
                 else:
                     if (real_signal == "NEUTRAL" or prev_signal == "NEUTRAL"):
                         logger.color_text(f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "yellow")
-                        resume_logger.log({"message": f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal} | {info}", "type": "info"})
+                        resume_logger.log({"message": f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "type": "info"})
                     else:
                         logger.color_text(f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "red")
-                        resume_logger.log({"message": f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal} | {info}", "type": "error"})
+                        resume_logger.log({"message": f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "type": "error"})
 
             # Obtener la señal para la nueva vela
-            predicted_signal = candle_stick_strategy.get_signal_for_new_candle()
+            predicted_signal, num_operation, info = candle_stick_strategy.get_signal_for_new_candle()
             logger.color_text(f"🔮Operacion: {num_operation} | Señal predicha para vela {candle_time.strftime('%H:%M:%S')}: {predicted_signal}", "yellow")
             resume_logger.log({"message": f"🔮Operacion: {num_operation} | Señal predicha para vela {candle_time.strftime('%H:%M:%S')}: {predicted_signal} | {info}", "type": "info"})
 
