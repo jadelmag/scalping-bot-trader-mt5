@@ -1,0 +1,3 @@
+{"message": "🔮Operacion: 05 | Señal predicha para vela 12:32:00: LONG | {'penultimate_candle': {}, 'upper_wick': '0.00002', 'lower_wick': '0.00008', 'has_upper_wick': np.True_, 'has_lower_wick': np.True_, 'low_price': '1.16159', 'high_price': '1.16172', 'close_price': '1.16167', 'open_price': '1.16170'}", "type": "info"}
+{"message": "✅ La señal anterior fue correcta para vela 12:32:00 → LONG", "type": "info"}
+{"message": "❌ Error: name 'penultimate_candle' is not defined", "type": "error"}

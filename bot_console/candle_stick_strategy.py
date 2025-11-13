@@ -26,7 +26,8 @@ class CandleStickStrategy:
         """
         Obtiene las últimas dos velas cerradas
         """
-        self.candles = mt5.copy_rates_from_pos(self.symbol, mt5.TIMEFRAME_M1, 0, 2)
+        # start_pos=1 para saltar la vela actual (incompleta) y obtener las 2 últimas cerradas
+        self.candles = mt5.copy_rates_from_pos(self.symbol, mt5.TIMEFRAME_M1, 1, 2)
         if self.candles is None:
             raise RuntimeError(f"No se pudieron descargar velas M1 para {self.symbol}: {mt5.last_error()}")
         return self.candles
@@ -37,7 +38,7 @@ class CandleStickStrategy:
         """
         if (self.candles is None):
             self.candles = self.get_last_two_candles()
-        return self.candles[0]
+        return self.candles[1]
     
     def get_penultimate_candle(self):
         """
@@ -45,7 +46,7 @@ class CandleStickStrategy:
         """
         if (self.candles is None):
             self.candles = self.get_last_two_candles()
-        return self.candles[1]
+        return self.candles[0]
 
     def get_sticks_from_candle(self, candle, last: bool = False):
         """
@@ -62,8 +63,8 @@ class CandleStickStrategy:
         upper_wick = high_price - candle_top
         lower_wick = candle_bottom - low_price
 
-        if abs(upper_wick - 0.00001) < 1e-6: upper_wick = 0
-        if abs(lower_wick - 0.00001) < 1e-6: lower_wick = 0
+        # if abs(upper_wick - 0.00001) < 1e-6: upper_wick = 0
+        # if abs(lower_wick - 0.00001) < 1e-6: lower_wick = 0
 
         has_upper_wick = upper_wick > 0
         has_lower_wick = lower_wick > 0
@@ -91,8 +92,8 @@ class CandleStickStrategy:
         close_price: precio de cierre
         """
         self.get_last_two_candles()
-        last_candle = self.get_last_candle()
         penultimate_candle = self.get_penultimate_candle()
+        last_candle = self.get_last_candle()
 
         upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev = self.get_sticks_from_candle(penultimate_candle, False)
 
@@ -168,7 +169,7 @@ class CandleStickStrategy:
             print(f"10: no tiene mecha superior y se cierra cerca del máximo")
             return SIGNAL_LONG, "10", info
         elif (not has_upper_wick and has_lower_wick):
-            if (upper_wick == 0 and lower_wick < 0.00004): # antes 0.00004
+            if (upper_wick == 0 and close_price > open_price): # antes 0.00004
                 print(f"11: no tiene mecha superior y la mecha inferior es mayor a 10")
                 return SIGNAL_LONG, "11", info
             elif (upper_wick < lower_wick):
