@@ -10,7 +10,7 @@ SHORT = "SHORT"
 NEUTRAL = "NEUTRAL"
 
 logger = Logger()
-resume_logger = ResumeJsonL(f"strategy_single_position_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+resume_logger = ResumeJsonL(f"strategy_single_position_{datetime.now().strftime('%Y%m%d_%H%M%S')}", blockMessages=False)
 
 
 class MarketOrder:

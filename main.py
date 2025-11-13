@@ -30,7 +30,7 @@ default_timeframe = os.getenv("TIMEFRAME", "1")
 symbol = os.getenv("SYMBOL", "EURUSD")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
 
-resume_logger = ResumeJsonL(f"main_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+resume_logger = ResumeJsonL(f"main_{datetime.now().strftime('%Y%m%d_%H%M%S')}", blockMessages=True)
 logger = Logger()
 
 def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_candle):

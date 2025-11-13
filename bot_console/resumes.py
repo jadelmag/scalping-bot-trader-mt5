@@ -2,11 +2,12 @@ import os
 import json
 
 class ResumeJsonL:
-    def __init__(self, strategy_name):
+    def __init__(self, strategy_name, blockMessages: bool = False):
         self.strategy_name = strategy_name
         self.log_dir = os.path.join(os.path.dirname(__file__), 'resumes')
         os.makedirs(self.log_dir, exist_ok=True)
         self.log_path = os.path.join(self.log_dir, f"{strategy_name}.jsonl")
+        self.blockMessages = blockMessages
 
     def log(self, data):
         """
