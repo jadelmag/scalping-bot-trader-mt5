@@ -82,9 +82,9 @@ class CandleStickStrategy:
 
         # diferencia real entre mechas
         real_wick_diff = abs(upper_wick - lower_wick)
-
+        print(f"real_wick_diff: {real_wick_diff}")
         diff = real_wick_diff <= wick_diff_tolerance
-        print(f"getDiffWick: {diff}")
+        
         return diff
 
     def getCloseToHigh(self, high_price, close_price):
