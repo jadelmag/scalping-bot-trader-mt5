@@ -186,15 +186,18 @@ class CandleStickStrategy:
                 else:
                     print(f"04E")
                     return SIGNAL_SHORT, "04E", info
-            elif (upper_wick < lower_wick) and close_price < open_price:
+            elif (upper_wick < lower_wick) and body > 20.0:
                 print(f"04F")
-                return SIGNAL_LONG, "04F", info
+                return SIGNAL_LONG, "04G", info
+            elif (upper_wick < lower_wick) and close_price < open_price:
+                print(f"04H")
+                return SIGNAL_LONG, "04H", info
             elif (upper_wick < lower_wick) and close_price > open_price:
-                print(f"04G")
-                return SIGNAL_SHORT, "04G", info
+                print(f"04I")
+                return SIGNAL_SHORT, "04I", info
             else:
-                print(f"04G") # CONFUSA
-                return SIGNAL_NONE, "04H", info
+                print(f"04J") # CONFUSA
+                return SIGNAL_NONE, "04J", info
 
         # --- No tiene mecha superior ni inferior
 
