@@ -14,10 +14,6 @@ SIGNAL_NONE = "NEUTRAL"
 SIGNAL_LONG = "LONG"
 SIGNAL_SHORT = "SHORT"
 
-TREND_UP = "UP"
-TREND_DOWN = "DOWN"
-TREND_NEUTRAL = "NEUTRAL"
-
 class CandleStickStrategy:
     def __init__(self, symbol: str):
         """
@@ -68,22 +64,6 @@ class CandleStickStrategy:
 
         return signal
 
-    def get_trend(self):
-        """
-        Obtiene el tendencia de las últimas dos velas cerradas
-        """
-        last_candle = self.get_last_candle()
-        penultimate_candle = self.get_penultimate_candle()
-
-        if last_candle['close'] > penultimate_candle['close']:
-            trend = TREND_UP
-        elif last_candle['close'] < penultimate_candle['close']:
-            trend = TREND_DOWN
-        else:
-            trend = TREND_NEUTRAL
-
-        return trend
-
     def get_sticks_from_candle(self, candle, last: bool = False):
         """
         Obtiene las mechas y datos de la última vela cerrada
@@ -109,7 +89,7 @@ class CandleStickStrategy:
         signal = self.get_signal_from_candle(candle)
 
         # --- Cuerpo de la vela
-        body = abs(close_price - open_price)
+        body = abs(close_price - open_price) * 100000.0
 
         print("Última vela:" if last else "Penúltima vela:")
         print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
@@ -138,7 +118,6 @@ class CandleStickStrategy:
         self.get_last_two_candles()
         penultimate_candle = self.get_penultimate_candle()
         last_candle = self.get_last_candle()
-        trend = self.get_trend()
 
         upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev, body_prev, signal_prev = self.get_sticks_from_candle(penultimate_candle, False)
 
@@ -170,113 +149,98 @@ class CandleStickStrategy:
             "signal": signal
         }
 
-        print(f"Tendencia: {trend}")
-
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
             if (lower_wick < upper_wick):
-                print("01")
+                print(f"01: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es grande")
                 return SIGNAL_SHORT, "01", info
-            elif (lower_wick > upper_wick):
-                print("02")
-                return SIGNAL_LONG, "02", info
             else:
-                if (body == 0):
-                    print("03A")
-                    return SIGNAL_LONG, "03A", info
+                if (body == 0.0):
+                    print("02")
+                    return SIGNAL_SHORT, "02", info
                 else:
-                    print("03B")
-                    return SIGNAL_SHORT, "03B", info
+                    print(f"02")
+                    return SIGNAL_LONG, "02", info
+
+        elif (has_upper_wick and has_lower_wick and open_price == close_price and upper_wick == lower_wick):
+            print(f"03: tienen mechas y se abre y cierra en el mismo precio y la diferencia entre mechas es igual")
+            return SIGNAL_NONE, "03", info
         
         # --- Tienen mecha superior e inferior
 
         elif (has_upper_wick and has_lower_wick):
-            if (upper_wick > lower_wick * 2) and trend == TREND_DOWN:
-                print("04")
-                return SIGNAL_SHORT, "04", info
-            elif (upper_wick > lower_wick * 2) and trend == TREND_UP:
-                print("05")
-                return SIGNAL_LONG, "05", info
-            elif (upper_wick > lower_wick) and trend == TREND_UP:
-                print("06")
-                return SIGNAL_LONG, "06", info
-            elif (upper_wick < lower_wick) and trend == TREND_DOWN:
-                print("07")
-                return SIGNAL_SHORT, "07", info
-            elif (upper_wick > lower_wick) and trend == TREND_DOWN:
-                print("08")
-                return SIGNAL_SHORT, "08", info
-            elif (upper_wick < lower_wick) and trend == TREND_UP:
-                print("09")
-                return SIGNAL_LONG, "09", info 
-            elif (upper_wick < lower_wick) and trend == TREND_NEUTRAL:
-                print("10")
-                return SIGNAL_LONG, "10", info 
+            if (upper_wick > lower_wick) and body_prev > body:
+                print(f"04A")
+                return SIGNAL_SHORT, "04A", info
+            elif (upper_wick > lower_wick):
+                if (body > 20.0):
+                    print(f"04B")
+                    return SIGNAL_SHORT, "04B", info
+                if (body > body_prev) and close_price > open_price:
+                    print(f"04C")
+                    return SIGNAL_LONG, "04C", info
+                elif (body < body_prev) and close_price > open_price:
+                    print(f"04D")
+                    return SIGNAL_LONG, "04D", info
+                else:
+                    print(f"04E")
+                    return SIGNAL_SHORT, "04E", info
+            elif (upper_wick < lower_wick) and body > 20.0:
+                print(f"04F")
+                return SIGNAL_LONG, "04G", info
+            elif (upper_wick < lower_wick) and body_prev < body:
+                print(f"04H")
+                return SIGNAL_SHORT, "04H", info
+            elif (upper_wick < lower_wick) and close_price < open_price:
+                print(f"04I")
+                return SIGNAL_LONG, "04I", info
+            elif (upper_wick < lower_wick) and close_price > open_price:
+                print(f"04J")
+                return SIGNAL_SHORT, "04J", info
             else:
-                print("11")
-                return SIGNAL_NONE, "11", info
-                
+                print(f"04K") # CONFUSA
+                return SIGNAL_NONE, "04K", info
 
         # --- No tiene mecha superior ni inferior
 
-        elif (not has_upper_wick and not has_lower_wick):
-            if lower_wick >= body * 2 and trend == TREND_DOWN:
-                print("20")
-                return SIGNAL_SHORT, "20", info
-            elif lower_wick >= body * 2 and trend == TREND_UP:
-                print("21")
-                return SIGNAL_LONG, "21", info
-            elif (body > body_prev) and trend == TREND_UP:
-                print("22")
-                return SIGNAL_SHORT, "22", info
-            elif (body > body_prev) and trend == TREND_DOWN:
-                print("23")
-                return SIGNAL_LONG, "23", info
-            else:
-                print(f"24")
-                return SIGNAL_NONE, "24", info
+        elif (not has_upper_wick and not has_lower_wick and upper_wick > lower_wick):
+            print(f"06")
+            return SIGNAL_LONG, "06", info
+        elif (not has_upper_wick and not has_lower_wick and lower_wick < upper_wick):
+            print(f"07")
+            return SIGNAL_SHORT, "07", info
 
         # --- Tienen mecha superior y no mecha inferior
 
         elif (has_upper_wick and not has_lower_wick):
-            # inverted hammer
-            if upper_wick >= body * 2 and trend == TREND_UP:
-                print("30")
-                return SIGNAL_SHORT, "30", info
-            elif upper_wick >= body * 2 and trend == TREND_DOWN:
-                print("31")
-                return SIGNAL_LONG, "31", info
-            elif (body > body_prev) and trend == TREND_UP:
-                print("32")
-                return SIGNAL_SHORT, "32", info
-            elif (body > body_prev) and trend == TREND_DOWN:
-                print("33")
-                return SIGNAL_LONG, "33", info
-            elif (upper_wick - lower_wick) == 0.00001 and trend == TREND_DOWN:
-                print("34")
-                return SIGNAL_SHORT, "34", info
-            elif (upper_wick - lower_wick) == 0.00001 and trend == TREND_UP:
-                print("35")
-                return SIGNAL_LONG, "35", info
+            if (body > 20.0):
+                print(f"08A")
+                return SIGNAL_LONG, "08A", info
+            elif (body_prev > body):
+                print(f"08B")
+                return SIGNAL_SHORT, "08B", info
+            elif (upper_wick > lower_wick):
+                return SIGNAL_LONG, "08C", info
+            elif (upper_wick < lower_wick):
+                return SIGNAL_SHORT, "08D", info
             else:
-                print("36")
-                return SIGNAL_NONE, "36", info
+                return SIGNAL_NONE, "08E", info
 
 
         # --- No tiene mecha superior y tienen mecha inferior
 
         elif (not has_upper_wick and has_lower_wick):
-            if (trend == TREND_DOWN and signal == SIGNAL_SHORT):
-                print("40")
-                return SIGNAL_SHORT, "40", info
-            elif (trend == TREND_UP or trend == TREND_NEUTRAL and signal == SIGNAL_LONG):
-                print("41")
-                return SIGNAL_LONG, "41", info
+            if (body > 20.0):
+                print(f"09A")
+                return SIGNAL_LONG, "09A", info
+            elif (lower_wick_prev < lower_wick) and signal == SIGNAL_LONG:
+                print(f"11: no tiene mecha superior y la mecha inferior es mayor a la mecha superior")
+                return SIGNAL_SHORT, "11", info
             else:
-                print("42")
-                return SIGNAL_NONE, "42", info
+                print(f"12: no tiene mecha superior y la mecha inferior es menor a la mecha superior")
+                return SIGNAL_LONG, "12", info
     
         else:
-            print("50")
-            return SIGNAL_NONE, "50", info
+            print(f"13: no se cumple ninguna condición")
+            return SIGNAL_NONE, "13", info
