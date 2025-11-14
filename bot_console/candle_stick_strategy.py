@@ -9,6 +9,8 @@ no ejecuta operaciones.
 import MetaTrader5 as mt5
 import pandas as pd
 from enum import IntEnum
+from bot_console.resumes import ResumeJsonL
+from datetime import datetime
 
 SIGNAL_NONE = "NEUTRAL"
 SIGNAL_LONG = "LONG"
@@ -17,6 +19,8 @@ SIGNAL_SHORT = "SHORT"
 TREND_UP = "UP"
 TREND_DOWN = "DOWN"
 TREND_NEUTRAL = "NEUTRAL"
+
+resume_logger = ResumeJsonL(f"candle_stick_strategy_{datetime.now().strftime('%Y%m%d_%H%M%S')}", blockMessages=True)
 
 class CandleStickStrategy:
     def __init__(self, symbol: str):
@@ -111,6 +115,19 @@ class CandleStickStrategy:
         # --- Cuerpo de la vela
         body = abs(close_price - open_price)
 
+        resume_logger.log({"message": f"Última vela:" if last else "Penúltima vela:", "type": "info"})
+        resume_logger.log({"message": f"🕯 Precio de cierre: Close: {close_price:.5f}", "type": "info"})
+        resume_logger.log({"message": f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})", "type": "info"})
+        resume_logger.log({"message": f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})", "type": "info"})
+        resume_logger.log({"message": f"has_upper_wick: {has_upper_wick}", "type": "info"})
+        resume_logger.log({"message": f"has_lower_wick: {has_lower_wick}", "type": "info"})
+        resume_logger.log({"message": f"low_price: {low_price}", "type": "info"})
+        resume_logger.log({"message": f"high_price: {high_price}", "type": "info"})
+        resume_logger.log({"message": f"close_price: {close_price}", "type": "info"})
+        resume_logger.log({"message": f"open_price: {open_price}", "type": "info"})
+        resume_logger.log({"message": f"body: {body}", "type": "info"})
+        resume_logger.log({"message": f"signal: {signal}", "type": "info"})
+
         print("Última vela:" if last else "Penúltima vela:")
         print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
         print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
@@ -144,139 +161,146 @@ class CandleStickStrategy:
 
         upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
 
-        prev_candle_info = {
-            "upper_wick": f"{upper_wick_prev:.5f}",
-            "lower_wick": f"{lower_wick_prev:.5f}",
-            "has_upper_wick": has_upper_wick_prev,
-            "has_lower_wick": has_lower_wick_prev,
-            "low_price": f"{low_price_prev:.5f}",
-            "high_price": f"{high_price_prev:.5f}",
-            "close_price": f"{close_price_prev:.5f}",
-            "open_price": f"{open_price_prev:.5f}",
-            "body": f"{body_prev:.5f}",
-            "signal": signal_prev
-        }
-        info = {
-            "penultimate_candle": prev_candle_info,
-            "upper_wick": f"{upper_wick:.5f}",
-            "lower_wick": f"{lower_wick:.5f}",
-            "has_upper_wick": has_upper_wick,
-            "has_lower_wick": has_lower_wick,
-            "low_price": f"{low_price:.5f}",
-            "high_price": f"{high_price:.5f}",
-            "close_price": f"{close_price:.5f}",
-            "open_price": f"{open_price:.5f}",
-            "body": f"{body:.5f}",
-            "signal": signal
-        }
-
         print(f"Tendencia: {trend}")
+        resume_logger.log({"message": f"Tendencia: {trend}", "type": "info"})
+        resume_logger.log({"message": f"\n{'='*50}", "type": "info"})
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
         if (has_upper_wick and has_lower_wick and open_price == close_price):
             if (lower_wick < upper_wick):
                 print("01")
-                return SIGNAL_SHORT, "01", info
+                return SIGNAL_SHORT, "01"
             elif (lower_wick > upper_wick):
                 print("02")
-                return SIGNAL_LONG, "02", info
+                return SIGNAL_LONG, "02"
             else:
                 if (body == 0):
                     print("03A")
-                    return SIGNAL_LONG, "03A", info
+                    return SIGNAL_LONG, "03A"
                 else:
                     print("03B")
-                    return SIGNAL_SHORT, "03B", info
+                    return SIGNAL_SHORT, "03B"
         
         # --- Tienen mecha superior e inferior
 
         elif (has_upper_wick and has_lower_wick):
             if (upper_wick > lower_wick * 2) and trend == TREND_DOWN:
                 print("04")
-                return SIGNAL_SHORT, "04", info
+                return SIGNAL_SHORT, "04"
             elif (upper_wick > lower_wick * 2) and trend == TREND_UP:
                 print("05")
-                return SIGNAL_LONG, "05", info
-            elif (upper_wick > lower_wick) and trend == TREND_UP:
+                return SIGNAL_LONG, "05"
+            elif (upper_wick * 2 < lower_wick) and trend == TREND_DOWN:
                 print("06")
-                return SIGNAL_LONG, "06", info
-            elif (upper_wick < lower_wick) and trend == TREND_DOWN:
+                return SIGNAL_SHORT, "06"
+            elif (upper_wick * 2 < lower_wick) and trend == TREND_UP:
                 print("07")
-                return SIGNAL_SHORT, "07", info
-            elif (upper_wick > lower_wick) and trend == TREND_DOWN:
+                return SIGNAL_LONG, "07"
+            elif (upper_wick > lower_wick) and trend == TREND_UP:
                 print("08")
-                return SIGNAL_SHORT, "08", info
-            elif (upper_wick < lower_wick) and trend == TREND_UP:
+                return SIGNAL_LONG, "08"
+            elif (upper_wick < lower_wick) and trend == TREND_DOWN:
                 print("09")
-                return SIGNAL_LONG, "09", info 
-            elif (upper_wick < lower_wick) and trend == TREND_NEUTRAL:
+                return SIGNAL_SHORT, "09"
+            elif (upper_wick > lower_wick) and trend == TREND_DOWN:
                 print("10")
-                return SIGNAL_LONG, "10", info 
-            else:
+                return SIGNAL_SHORT, "10"
+            elif (upper_wick < lower_wick) and trend == TREND_UP:
                 print("11")
-                return SIGNAL_NONE, "11", info
+                return SIGNAL_LONG, "11" 
+            elif (upper_wick < lower_wick) and trend == TREND_NEUTRAL:
+                print("12")
+                return SIGNAL_LONG, "12" 
+            elif (upper_wick > lower_wick) and trend == TREND_NEUTRAL:
+                print("13")
+                return SIGNAL_SHORT, "13"
+            else:
+                print("14")
+                return SIGNAL_SHORT, "14"
                 
-
         # --- No tiene mecha superior ni inferior
 
         elif (not has_upper_wick and not has_lower_wick):
             if lower_wick >= body * 2 and trend == TREND_DOWN:
                 print("20")
-                return SIGNAL_SHORT, "20", info
+                return SIGNAL_SHORT, "20"
             elif lower_wick >= body * 2 and trend == TREND_UP:
                 print("21")
-                return SIGNAL_LONG, "21", info
+                return SIGNAL_LONG, "21"
             elif (body > body_prev) and trend == TREND_UP:
                 print("22")
-                return SIGNAL_SHORT, "22", info
+                return SIGNAL_SHORT, "22"
             elif (body > body_prev) and trend == TREND_DOWN:
                 print("23")
-                return SIGNAL_LONG, "23", info
+                return SIGNAL_LONG, "23"
             else:
                 print(f"24")
-                return SIGNAL_NONE, "24", info
+                return SIGNAL_SHORT, "24"
 
         # --- Tienen mecha superior y no mecha inferior
 
         elif (has_upper_wick and not has_lower_wick):
-            # inverted hammer
-            if upper_wick >= body * 2 and trend == TREND_UP:
+            if upper_wick >= 0.00010 and trend == TREND_DOWN:
                 print("30")
-                return SIGNAL_SHORT, "30", info
-            elif upper_wick >= body * 2 and trend == TREND_DOWN:
+                return SIGNAL_SHORT, "30"
+            elif upper_wick >= 0.00010 and trend == TREND_UP:
                 print("31")
-                return SIGNAL_LONG, "31", info
-            elif (body > body_prev) and trend == TREND_UP:
+                return SIGNAL_LONG, "31"
+            elif upper_wick == 0.00001 and trend == TREND_DOWN:
                 print("32")
-                return SIGNAL_SHORT, "32", info
-            elif (body > body_prev) and trend == TREND_DOWN:
+                return SIGNAL_SHORT, "32"
+            elif upper_wick == 0.00001 and trend == TREND_UP:
                 print("33")
-                return SIGNAL_LONG, "33", info
-            elif (upper_wick - lower_wick) == 0.00001 and trend == TREND_DOWN:
+                return SIGNAL_LONG, "33"
+            elif upper_wick >= body * 2 and trend == TREND_UP:
                 print("34")
-                return SIGNAL_SHORT, "34", info
-            elif (upper_wick - lower_wick) == 0.00001 and trend == TREND_UP:
+                return SIGNAL_SHORT, "34"
+            elif upper_wick >= body * 2 and trend == TREND_DOWN:
                 print("35")
-                return SIGNAL_LONG, "35", info
-            else:
+                return SIGNAL_LONG, "35"
+            elif (body > body_prev) and trend == TREND_UP:
                 print("36")
-                return SIGNAL_NONE, "36", info
+                return SIGNAL_SHORT, "36"
+            elif (body > body_prev) and trend == TREND_DOWN:
+                print("37")
+                return SIGNAL_LONG, "37"
+            else:
+                print("38")
+                return SIGNAL_SHORT, "38"
 
 
         # --- No tiene mecha superior y tienen mecha inferior
 
         elif (not has_upper_wick and has_lower_wick):
-            if (trend == TREND_DOWN and signal == SIGNAL_SHORT):
+            if lower_wick >= 0.00010 and trend == TREND_DOWN:
                 print("40")
-                return SIGNAL_SHORT, "40", info
-            elif (trend == TREND_UP or trend == TREND_NEUTRAL and signal == SIGNAL_LONG):
+                return SIGNAL_LONG, "40"
+            elif lower_wick >= 0.00010 and trend == TREND_UP:
                 print("41")
-                return SIGNAL_LONG, "41", info
-            else:
+                return SIGNAL_SHORT, "41"
+            elif lower_wick == 0.00001 and trend == TREND_DOWN:
                 print("42")
-                return SIGNAL_NONE, "42", info
+                return SIGNAL_SHORT, "42"
+            elif lower_wick == 0.00001 and trend == TREND_UP:
+                print("43")
+                return SIGNAL_LONG, "43"
+            elif lower_wick >= body * 2 and trend == TREND_UP:
+                print("44")
+                return SIGNAL_LONG, "44"
+            elif lower_wick >= body * 2 and trend == TREND_DOWN:
+                print("45")
+                return SIGNAL_SHORT, "45"
+            elif (body > body_prev) and trend == TREND_UP:
+                print("46")
+                return SIGNAL_SHORT, "46"
+            elif (body > body_prev) and trend == TREND_DOWN:
+                print("47")
+                return SIGNAL_LONG, "47"
+            else:
+                print("48")
+                return SIGNAL_SHORT, "48"
     
         else:
             print("50")
-            return SIGNAL_NONE, "50", info
+            return SIGNAL_NONE, "50"
