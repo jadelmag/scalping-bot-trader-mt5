@@ -36,13 +36,17 @@ class CandleGeneratorOffline:
         self.pos_current_candle += 1
 
         if self.pos_current_candle >= self.num_candles:
-            raise StopIteration("No quedan más velas en el CSV")
+            return None  # No más velas disponibles
 
         return self.candles.iloc[self.pos_current_candle]
 
     def get_next_candle(self):
         """Procesa la siguiente vela y devuelve la señal"""
         new_candle = self.get_candles()
+        
+        # Si no hay más velas, retornar None para indicar el final
+        if new_candle is None:
+            return None
 
         try:
             # Acceder a los precios de manera compatible con ambos formatos
