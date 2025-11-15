@@ -5,16 +5,16 @@ SIGNAL_SHORT = "SHORT"
 SIGNAL_NONE = "NEUTRAL"
 
 class CandleGeneratorOffline:
-    def __init__(self):
+    def __init__(self, path):
         self.pos_current_candle = -1  # empieza antes de la primera vela
         self.candles = None
         self.num_candles = 0
 
-        self.get_candles_from_csv()
+        self.get_candles_from_csv(path)
 
-    def get_candles_from_csv(self):
+    def get_candles_from_csv(self, path):
         """Carga las velas desde charts.csv"""
-        self.candles = pd.read_csv("offline/csv/chart.csv")
+        self.candles = pd.read_csv(path)
         self.num_candles = len(self.candles)
 
     def get_candles(self):

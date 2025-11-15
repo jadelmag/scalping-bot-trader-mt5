@@ -32,6 +32,9 @@ timeframe_map = {
 default_timeframe = os.getenv("TIMEFRAME", "1")
 symbol = os.getenv("SYMBOL", "EURUSD")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
+file_path_chart = "offline/csv/chart.csv"
+file_path_chart_year = "offline/csv_years/DATA_M1_2024.csv"
+
 
 logger = Logger()
 
@@ -114,8 +117,8 @@ def main():
 
         # Inicializar modelo
         logger.color_text("🔄 Inicializando modelo...", "blue")
-        candle_generator = CandleGeneratorOffline()
-        candle_stick_strategy = CandleStickOffline()
+        candle_generator = CandleGeneratorOffline(file_path_chart_year)
+        candle_stick_strategy = CandleStickOffline(file_path_chart_year)
         
         # Variable para controlar la última vela procesada
         last_processed_candle = None
