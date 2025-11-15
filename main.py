@@ -75,18 +75,18 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
             # Guardar la predicción actual para comparar en la próxima iteración
             last_prediction = (predicted_signal, candle_time)
 
-            # # Evitar procesar la misma vela múltiples veces
-            # if last_processed_candle != candle_time:
-            #     last_processed_candle = candle_time
-            #     MarketSimulator.strategy_success_order(symbol=symbol, volume=VOLUME, signal=predicted_signal.upper())    
-            # else:
-            #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
-            #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
+            # Evitar procesar la misma vela múltiples veces
+            if last_processed_candle != candle_time:
+                last_processed_candle = candle_time
+                MarketSimulator.strategy_success_order(symbol=symbol, volume=VOLUME, signal=predicted_signal.upper())    
+            else:
+                logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
+                resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
         time.sleep(1)
 
 # Tu código principal modificado
-VOLUME = 0.5
+VOLUME = 5.0
 def main():
     """Función principal optimizada"""
     try:

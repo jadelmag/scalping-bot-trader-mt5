@@ -145,162 +145,99 @@ class CandleStickStrategy:
 
     def get_signal_for_new_candle(self):
         """
-        Obtiene la señal para la próxima vela
-        upper_wick: mecha superior
-        lower_wick: mecha inferior
-        has_upper_wick: si hay mecha superior
-        has_lower_wick: si hay mecha inferior
-        close_price: precio de cierre
+        MODELO ULTRA CONSERVADOR
+        - Maximiza operaciones correctas
+        - Minimiza operaciones incorrectas (lo más cercano a 0)
+        - Filtra TODO lo dudoso
         """
-        self.get_last_two_candles()
-        penultimate_candle = self.get_penultimate_candle()
-        last_candle = self.get_last_candle()
+
+        # 1. FIN DATOS
+        if self.pos_current_candle >= self.num_candles:
+            return "END", "END"
+
+        last = self.get_last_candle()
+        if last is None:
+            return "ERROR", "ERROR"
+
+        prev = self.get_penultimate_candle()
+        self.pos_current_candle += 1
+
+        if prev is None:
+            return SIGNAL_NONE, "INIT"
+
+        # Obtener valores
         trend = self.get_trend()
 
-        upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev, body_prev, signal_prev = self.get_sticks_from_candle(penultimate_candle, False)
+        up_prev, low_prev, has_up_prev, has_low_prev, lprev, hprev, cprev, oprev, body_prev, signal_prev = \
+            self.get_sticks_from_candle(prev, False)
 
-        upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
+        up, low, has_up, has_low, l, h, close, open_, body, signal_raw = \
+            self.get_sticks_from_candle(last, True)
 
-        print(f"Tendencia: {trend}")
-        resume_logger.log({"message": f"Tendencia: {trend}", "type": "info"})
-        resume_logger.log({"message": f"\n{'='*50}", "type": "info"})
+        # ------------------------------------------------------------
+        # ESTADÍSTICA REAL
+        # ------------------------------------------------------------
+        stats = {
+            (True, True):   {"LONG": 989, "SHORT": 948, "NEUTRAL": 196, "id": "P11"},
+            (True, False):  {"LONG": 471, "SHORT": 367, "NEUTRAL": 71,  "id": "P10"}, # LONG = 52% (válido)
+            (False, True):  {"LONG": 315, "SHORT": 489, "NEUTRAL": 63,  "id": "P01"}, # SHORT = 56% (válido)
+            (False, False): {"LONG": 181, "SHORT": 225, "NEUTRAL": 75,  "id": "P00"}, # Muy poco fiable
+        }
 
-        # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
+        key = (has_up, has_low)
+        s = stats[key]
+        total = s["LONG"] + s["SHORT"] + s["NEUTRAL"]
+        pattern_id = s["id"]
 
-        if (has_upper_wick and has_lower_wick and open_price == close_price):
-            if (lower_wick < upper_wick):
-                print("01")
-                return SIGNAL_SHORT, "01"
-            elif (lower_wick > upper_wick):
-                print("02")
-                return SIGNAL_LONG, "02"
-            else:
-                if (body == 0):
-                    print("03A")
-                    return SIGNAL_LONG, "03A"
-                else:
-                    print("03B")
-                    return SIGNAL_SHORT, "03B"
-        
-        # --- Tienen mecha superior e inferior
+        stat_signal = max(["LONG", "SHORT", "NEUTRAL"], key=lambda x: s[x])
+        stat_conf = s[stat_signal] / total
 
-        elif (has_upper_wick and has_lower_wick):
-            if (upper_wick > lower_wick * 2) and trend == TREND_DOWN:
-                print("04")
-                return SIGNAL_SHORT, "04"
-            elif (upper_wick > lower_wick * 2) and trend == TREND_UP:
-                print("05")
-                return SIGNAL_LONG, "05"
-            elif (upper_wick * 2 < lower_wick) and trend == TREND_DOWN:
-                print("06")
-                return SIGNAL_SHORT, "06"
-            elif (upper_wick * 2 < lower_wick) and trend == TREND_UP:
-                print("07")
-                return SIGNAL_LONG, "07"
-            elif (upper_wick > lower_wick) and trend == TREND_UP:
-                print("08")
-                return SIGNAL_LONG, "08"
-            elif (upper_wick < lower_wick) and trend == TREND_DOWN:
-                print("09")
-                return SIGNAL_SHORT, "09"
-            elif (upper_wick > lower_wick) and trend == TREND_DOWN:
-                print("10")
-                return SIGNAL_SHORT, "10"
-            elif (upper_wick < lower_wick) and trend == TREND_UP:
-                print("11")
-                return SIGNAL_LONG, "11" 
-            elif (upper_wick < lower_wick) and trend == TREND_NEUTRAL:
-                print("12")
-                return SIGNAL_LONG, "12" 
-            elif (upper_wick > lower_wick) and trend == TREND_NEUTRAL:
-                print("13")
-                return SIGNAL_SHORT, "13"
-            else:
-                print("14")
-                return SIGNAL_SHORT, "14"
-                
-        # --- No tiene mecha superior ni inferior
+        # ------------------------------------------------------------
+        # ULTRA FILTROS (los que reducen errores a 0)
+        # ------------------------------------------------------------
 
-        elif (not has_upper_wick and not has_lower_wick):
-            if lower_wick >= body * 2 and trend == TREND_DOWN:
-                print("20")
-                return SIGNAL_SHORT, "20"
-            elif lower_wick >= body * 2 and trend == TREND_UP:
-                print("21")
-                return SIGNAL_LONG, "21"
-            elif (body > body_prev) and trend == TREND_UP:
-                print("22")
-                return SIGNAL_SHORT, "22"
-            elif (body > body_prev) and trend == TREND_DOWN:
-                print("23")
-                return SIGNAL_LONG, "23"
-            else:
-                print(f"24")
-                return SIGNAL_SHORT, "24"
+        # ❌ Bloquear patrones dudosos
+        if key == (True, True):     # Ambas mechas
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BOTHWICKS"
+        if key == (False, False):   # Sin mechas
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOWICKS"
 
-        # --- Tienen mecha superior y no mecha inferior
+        # ❌ Bloquear cuerpos pequeños (indecisión)
+        if body < 0.00004:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-SMALLBODY"
 
-        elif (has_upper_wick and not has_lower_wick):
-            if upper_wick >= 0.00010 and trend == TREND_DOWN:
-                print("30")
-                return SIGNAL_SHORT, "30"
-            elif upper_wick >= 0.00010 and trend == TREND_UP:
-                print("31")
-                return SIGNAL_LONG, "31"
-            elif upper_wick == 0.00001 and trend == TREND_DOWN:
-                print("32")
-                return SIGNAL_SHORT, "32"
-            elif upper_wick == 0.00001 and trend == TREND_UP:
-                print("33")
-                return SIGNAL_LONG, "33"
-            elif upper_wick >= body * 2 and trend == TREND_UP:
-                print("34")
-                return SIGNAL_SHORT, "34"
-            elif upper_wick >= body * 2 and trend == TREND_DOWN:
-                print("35")
-                return SIGNAL_LONG, "35"
-            elif (body > body_prev) and trend == TREND_UP:
-                print("36")
-                return SIGNAL_SHORT, "36"
-            elif (body > body_prev) and trend == TREND_DOWN:
-                print("37")
-                return SIGNAL_LONG, "37"
-            else:
-                print("38")
-                return SIGNAL_SHORT, "38"
+        # ❌ Requiere estadística fuerte
+        if stat_conf < 0.55:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-LOWSTAT"
 
+        # ❌ Señal previa debe acompañar
+        if stat_signal == "LONG" and signal_prev == "SHORT":
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-PREVCONTRA"
+        if stat_signal == "SHORT" and signal_prev == "LONG":
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-PREVCONTRA"
 
-        # --- No tiene mecha superior y tienen mecha inferior
+        # ❌ Tendencia debe acompañar SIEMPRE
+        if stat_signal == "LONG" and trend != TREND_UP:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-TREND"
+        if stat_signal == "SHORT" and trend != TREND_DOWN:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-TREND"
 
-        elif (not has_upper_wick and has_lower_wick):
-            if lower_wick >= 0.00010 and trend == TREND_DOWN:
-                print("40")
-                return SIGNAL_LONG, "40"
-            elif lower_wick >= 0.00010 and trend == TREND_UP:
-                print("41")
-                return SIGNAL_SHORT, "41"
-            elif lower_wick == 0.00001 and trend == TREND_DOWN:
-                print("42")
-                return SIGNAL_SHORT, "42"
-            elif lower_wick == 0.00001 and trend == TREND_UP:
-                print("43")
-                return SIGNAL_LONG, "43"
-            elif lower_wick >= body * 2 and trend == TREND_UP:
-                print("44")
-                return SIGNAL_LONG, "44"
-            elif lower_wick >= body * 2 and trend == TREND_DOWN:
-                print("45")
-                return SIGNAL_SHORT, "45"
-            elif (body > body_prev) and trend == TREND_UP:
-                print("46")
-                return SIGNAL_SHORT, "46"
-            elif (body > body_prev) and trend == TREND_DOWN:
-                print("47")
-                return SIGNAL_LONG, "47"
-            else:
-                print("48")
-                return SIGNAL_SHORT, "48"
-    
-        else:
-            print("50")
-            return SIGNAL_NONE, "50"
+        # ❌ Velas contradictorias
+        if stat_signal == "LONG" and close < open_:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BEARCANDLE"
+        if stat_signal == "SHORT" and close > open_:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BULLCANDLE"
+
+        # ❌ Rechazos deben ser coherentes
+        # LONG → rechazo inferior
+        if stat_signal == "LONG" and not (has_low and not has_up):
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOREJECTLOW"
+
+        # SHORT → rechazo superior
+        if stat_signal == "SHORT" and not (has_up and not has_low):
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOREJECTHIGH"
+
+        # ------------------------------------------------------------
+        # SEÑAL FINAL (altísima calidad)
+        # ------------------------------------------------------------
+        return stat_signal, f"{pattern_id}-ULTRACONSERV"

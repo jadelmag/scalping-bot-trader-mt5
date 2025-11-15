@@ -44,6 +44,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
     """
     last_prediction = None  # guarda la última predicción y su hora
 
+    num_candles = 1
     num_success = 0
     num_fails = 0
     num_neutral = 0
@@ -72,6 +73,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
                 logger.color_text(f"=======================================================", "blue")
                 break
 
+            print(f"Numero de velas procesadas: {num_candles}")
             print(f"✅ Operaciones Correctas: {num_success}")
             print(f"❌ Operaciones Incorrectas: {num_fails}")
             print(f"⚠️ Operaciones No Realizadas: {num_neutral}")
@@ -113,6 +115,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
         #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
+        num_candles += 1
         time.sleep(0.001)
 
 # Tu código principal modificado
@@ -128,8 +131,8 @@ def main():
         # Inicializar modelo
         logger.color_text("🔄 Inicializando modelo...", "blue")
         
-        candle_generator = CandleGeneratorOffline(file_path_chart)
-        candle_stick_strategy = CandleStickOffline(file_path_chart)
+        candle_generator = CandleGeneratorOffline(file_path_chart_year)
+        candle_stick_strategy = CandleStickOffline(file_path_chart_year)
         
         # Variable para controlar la última vela procesada
         last_processed_candle = None
