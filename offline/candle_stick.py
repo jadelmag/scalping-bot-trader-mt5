@@ -22,7 +22,7 @@ TREND_NEUTRAL = "NEUTRAL"
 
 class CandleStickOffline:
     def __init__(self):
-        self.pos_current_candle = -1  # empieza antes de la primera vela
+        self.pos_current_candle = 0
         self.candles = None
         self.num_candles = 0
 
@@ -33,33 +33,21 @@ class CandleStickOffline:
         self.candles = pd.read_csv("offline/csv/chart.csv")
         self.num_candles = len(self.candles)
 
-    def check_has_finish(self):
-        """Verifica si se han procesado todas las velas"""
-        all_procesed = self.pos_current_candle >= self.num_candles
-        return all_procesed
-
     def get_last_candle(self):
         """
         Obtiene la última vela cerrada
         """
-        last_index = 1 + self.pos_current_candle
-        if last_index >= self.num_candles:
-            print(f"Error: Índice fuera de rango. Índice: {last_index}, Total velas: {self.num_candles}")
+        if self.pos_current_candle >= self.num_candles:
             return None
-        last = self.candles.iloc[last_index]
-        return last
-    
+        return self.candles.iloc[self.pos_current_candle]
+
     def get_penultimate_candle(self):
         """
         Obtiene la penúltima vela cerrada
         """
-        penult_index = self.pos_current_candle
-        if penult_index >= self.num_candles:
-            print(f"Error: Índice fuera de rango. Índice: {penult_index}, Total velas: {self.num_candles}")
+        if self.pos_current_candle - 1 < 0:
             return None
-        penult = self.candles.iloc[penult_index]
-        self.pos_current_candle += 1
-        return penult
+        return self.candles.iloc[self.pos_current_candle - 1]
 
     def get_signal_from_candle(self, candle):
         """
@@ -159,18 +147,18 @@ class CandleStickOffline:
         # --- Cuerpo de la vela
         body = abs(close_price - open_price)
 
-        # print("Última vela:" if last else "Penúltima vela:")
-        # print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
-        # print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
-        # print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
-        # print(f"has_upper_wick: {has_upper_wick}")
-        # print(f"has_lower_wick: {has_lower_wick}")
-        # print(f"low_price: {low_price}")
-        # print(f"high_price: {high_price}")
-        # print(f"close_price: {close_price}")
-        # print(f"open_price: {open_price}")
-        # print(f"body: {body}")
-        # print(f"signal: {signal}")
+        print("Última vela:" if last else "Penúltima vela:")
+        print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
+        print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
+        print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
+        print(f"has_upper_wick: {has_upper_wick}")
+        print(f"has_lower_wick: {has_lower_wick}")
+        print(f"low_price: {low_price}")
+        print(f"high_price: {high_price}")
+        print(f"close_price: {close_price}")
+        print(f"open_price: {open_price}")
+        print(f"body: {body}")
+        print(f"signal: {signal}")
 
         return upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal
 
@@ -183,17 +171,16 @@ class CandleStickOffline:
         has_lower_wick: si hay mecha inferior
         close_price: precio de cierre
         """
-        if (self.check_has_finish()):
-            print("Se han procesado todas las velas")
+        # AVANZAR LA VELA AHORA
+        if self.pos_current_candle >= self.num_candles:
             return "END", "END"
-            
+
+        # Usar las velas actuales
         penultimate_candle = self.get_penultimate_candle()
         last_candle = self.get_last_candle()
-        
-        # Verificar si alguna de las velas es None (fuera de rango)
-        if penultimate_candle is None or last_candle is None:
-            print("Error: No se pudieron obtener las velas necesarias - fin de datos")
-            return "END", "END"
+
+        # avanzar a la siguiente para la próxima llamada
+        self.pos_current_candle += 1
             
         trend = self.get_trend()
 

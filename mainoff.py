@@ -84,7 +84,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
         #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
-        time.sleep(0.001)
+        time.sleep(60)
 
 # Tu código principal modificado
 VOLUME = 0.5
