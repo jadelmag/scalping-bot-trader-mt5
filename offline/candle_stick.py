@@ -20,6 +20,8 @@ TREND_UP = "UP"
 TREND_DOWN = "DOWN"
 TREND_NEUTRAL = "NEUTRAL"
 
+resume_logger = ResumeJsonL(f"candle_stick_strategy_{datetime.now().strftime('%Y%m%d_%H%M%S')}", blockMessages=True)
+
 class CandleStickOffline:
     def __init__(self):
         self.pos_current_candle = 0
@@ -147,6 +149,19 @@ class CandleStickOffline:
         # --- Cuerpo de la vela
         body = abs(close_price - open_price)
 
+        resume_logger.log({"message": f"Última vela:" if last else "Penúltima vela:", "type": "info"})
+        resume_logger.log({"message": f"🕯 Precio de cierre: Close: {close_price:.5f}", "type": "info"})
+        resume_logger.log({"message": f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})", "type": "info"})
+        resume_logger.log({"message": f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})", "type": "info"})
+        resume_logger.log({"message": f"has_upper_wick: {has_upper_wick}", "type": "info"})
+        resume_logger.log({"message": f"has_lower_wick: {has_lower_wick}", "type": "info"})
+        resume_logger.log({"message": f"low_price: {low_price}", "type": "info"})
+        resume_logger.log({"message": f"high_price: {high_price}", "type": "info"})
+        resume_logger.log({"message": f"close_price: {close_price}", "type": "info"})
+        resume_logger.log({"message": f"open_price: {open_price}", "type": "info"})
+        resume_logger.log({"message": f"body: {body}", "type": "info"})
+        resume_logger.log({"message": f"signal: {signal}", "type": "info"})
+
         print("Última vela:" if last else "Penúltima vela:")
         print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
         print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
@@ -159,6 +174,20 @@ class CandleStickOffline:
         print(f"open_price: {open_price}")
         print(f"body: {body}")
         print(f"signal: {signal}")
+
+        info = {
+            "ultima_vela": "Última vela:" if last else "Penúltima vela:",
+            "upper_wick": upper_wick,
+            "lower_wick": lower_wick,
+            "has_upper_wick": has_upper_wick,
+            "has_lower_wick": has_lower_wick,
+            "low_price": low_price,
+            "high_price": high_price,
+            "close_price": close_price,
+            "open_price": open_price,
+            "body": body,
+            "signal": signal
+        }
 
         return upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal
 
@@ -189,6 +218,8 @@ class CandleStickOffline:
         upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
 
         print(f"Tendencia: {trend}")
+        resume_logger.log({"message": f"Tendencia: {trend}", "type": "info"})
+        resume_logger.log({"message": f"\n{'='*50}", "type": "info"})
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
