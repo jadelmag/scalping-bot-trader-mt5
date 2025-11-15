@@ -178,9 +178,10 @@ scipy>=1.11.0
    MT5_PASSWORD=tu_contraseña_segura
    MT5_SERVER=nombre_del_servidor
    
-   # Configuración de trading (opcional)
+   # Configuración de trading
    SYMBOL=EURUSD
    TIMEFRAME=1
+   VOLUMEN=0.01
    ```
 
 5. **Verificar instalación de MetaTrader 5**

@@ -31,6 +31,7 @@ timeframe_map = {
 }
 default_timeframe = os.getenv("TIMEFRAME", "1")
 symbol = os.getenv("SYMBOL", "EURUSD")
+volumen = os.getenv("VOLUME", "5.0")
 timeframe = timeframe_map.get(default_timeframe, mt5.TIMEFRAME_M1)
 file_path_chart = "offline/csv/chart.csv"
 file_path_chart_year = "offline/csv_years/DATA_M1_2024.csv"
@@ -118,8 +119,9 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         num_candles += 1
         time.sleep(0.001)
 
-# Tu código principal modificado
-VOLUME = 0.5
+# VOLUMEN
+VOLUME = float(volumen)
+
 def main():
     """Función principal optimizada"""
     try:
