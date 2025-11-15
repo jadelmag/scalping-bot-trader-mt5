@@ -282,25 +282,37 @@ class CandleStickOffline:
         
         # --- No tiene mecha superior y tienen mecha inferior
 
-        if (not has_upper_wick and has_lower_wick):
-            upper_wick_prev = float(f"{upper_wick_prev:.5f}")
-            lower_wick_prev = float(f"{lower_wick_prev:.5f}")
-            upper_wick = float(f"{upper_wick:.5f}")
-            lower_wick = float(f"{lower_wick:.5f}")
-            if (signal_prev == SIGNAL_SHORT and signal == SIGNAL_LONG):
-                if (lower_wick_prev < lower_wick):
-                    print("40")
-                    return SIGNAL_SHORT, "40"
-                else:
-                    print("43")
-                    return SIGNAL_NONE, "43"
+        if not has_upper_wick and has_lower_wick:
             # Patrón: Rechazo en soporte en tendencia alcista
-            elif (body > 0.0001 and trend == TREND_UP):
+            if (body > 0.0001 and trend == TREND_UP and signal_prev != SIGNAL_SHORT):
                 print("40")
                 return SIGNAL_LONG, "40"
+                
+            # Patrón: Pin bar alcista
+            elif (body < 0.00003 and trend == TREND_UP and body_prev > 0.0001):
+                print("41")
+                return SIGNAL_LONG, "41"
+                
+            # Patrón: Cuerpo pequeño con mecha inferior larga
+            elif (body < 0.00005 and trend == TREND_DOWN):
+                # Posible reversión, ser conservador
+                print("42")
+                return SIGNAL_NONE, "42"
+            # elif (signal_prev == SIGNAL_SHORT and signal == SIGNAL_LONG):
+            #     upper_wick_prev = float(f"{upper_wick_prev:.5f}")
+            #     lower_wick_prev = float(f"{lower_wick_prev:.5f}")
+            #     upper_wick = float(f"{upper_wick:.5f}")
+            #     lower_wick = float(f"{lower_wick:.5f}")
+            #     if (lower_wick_prev < lower_wick):
+            #         print("43")
+            #         return SIGNAL_SHORT, "43"
+            #     else:
+            #         print("44")
+            #         return SIGNAL_NONE, "44"
             else:
-                print("43")
-                return SIGNAL_NONE, "43"
+                print("45")
+                return SIGNAL_NONE, "45"
+
     
         else:
             return SIGNAL_NONE, "50"
