@@ -72,6 +72,11 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
                 logger.color_text(f"=======================================================", "blue")
                 break
 
+            print(f"✅ Operaciones Correctas: {num_success}")
+            print(f"❌ Operaciones Incorrectas: {num_fails}")
+            print(f"⚠️ Operaciones No Realizadas: {num_neutral}")
+
+
             # Comparar
             if real_signal == prev_signal:
                 logger.color_text(f"✅ La señal anterior fue correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")

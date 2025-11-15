@@ -169,18 +169,18 @@ class CandleStickOffline:
         # --- Cuerpo de la vela
         body = abs(close_price - open_price)
 
-        print("Última vela:" if last else "Penúltima vela:")
-        print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
-        print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
-        print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
-        print(f"has_upper_wick: {has_upper_wick}")
-        print(f"has_lower_wick: {has_lower_wick}")
-        print(f"low_price: {low_price}")
-        print(f"high_price: {high_price}")
-        print(f"close_price: {close_price}")
-        print(f"open_price: {open_price}")
-        print(f"body: {body}")
-        print(f"signal: {signal}")
+        # print("Última vela:" if last else "Penúltima vela:")
+        # print(f"🕯 Precio de cierre: Close: {close_price:.5f}")
+        # print(f"⬆ Mecha superior: {upper_wick:.5f} ({'Sí' if has_upper_wick else 'No'})")
+        # print(f"⬇ Mecha inferior: {lower_wick:.5f} ({'Sí' if has_lower_wick else 'No'})")
+        # print(f"has_upper_wick: {has_upper_wick}")
+        # print(f"has_lower_wick: {has_lower_wick}")
+        # print(f"low_price: {low_price}")
+        # print(f"high_price: {high_price}")
+        # print(f"close_price: {close_price}")
+        # print(f"open_price: {open_price}")
+        # print(f"body: {body}")
+        # print(f"signal: {signal}")
 
         return upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal
 
