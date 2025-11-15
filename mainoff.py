@@ -1,6 +1,7 @@
 import MetaTrader5 as mt5
 import sys
 import os
+import io
 import time
 import threading
 from datetime import datetime
@@ -9,11 +10,14 @@ from bot_console.logger import Logger
 from bot_console.market_order import MarketSimulator
 from offline.candle import CandleGeneratorOffline
 from offline.candle_stick import CandleStickOffline
+from bot_console.login import LoginMT5
+
+# Configurar stdout para UTF-8
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # Añadir el directorio actual al path de Python
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from bot_console.login import LoginMT5
 
 # Configuración desde variables de entorno
 timeframe_map = {
@@ -37,6 +41,10 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
     """
     last_prediction = None  # guarda la última predicción y su hora
 
+    num_success = 0
+    num_fails = 0
+    num_neutral = 0
+
     while True:
         logger.color_text(f"\n{'='*50}", "blue")
         logger.color_text(f"🕯️ NUEVA VELA INICIADA: ", "cyan")
@@ -54,11 +62,14 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
             # Comparar
             if real_signal == prev_signal:
                 logger.color_text(f"✅ La señal anterior fue correcta para vela {prev_time.strftime('%H:%M:%S')} → {real_signal}", "green")
+                num_success += 1
             else:
                 if (real_signal == "NEUTRAL" or prev_signal == "NEUTRAL"):
                     logger.color_text(f"⚠️ Operación no realizada para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "yellow")
+                    num_neutral += 1
                 else:
                     logger.color_text(f"❌ Señal incorrecta para vela {prev_time.strftime('%H:%M:%S')} → real={real_signal}, pred={prev_signal}", "red")
+                    num_fails += 1
 
         # Obtener la señal para la nueva vela
         predicted_signal, num_operation = candle_stick_strategy.get_signal_for_new_candle()
@@ -66,6 +77,11 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         # Verificar si hemos llegado al final de los datos o hay un error
         if num_operation == "END":
             logger.color_text("✅ Se han procesado todas las velas del CSV", "green")
+            logger.color_text(f"================== RESUMEN ============================", "blue")
+            logger.color_text(f"✅ Operaciones Correctas: {num_success} ", "green")
+            logger.color_text(f"❌ Operaciones Incorrectas: {num_fails} ", "red")
+            logger.color_text(f"⚠️ Operaciones No Realizadas: {num_neutral} ", "yellow")
+            logger.color_text(f"=======================================================", "blue")
             break
         elif num_operation == "ERROR":
             logger.color_text("❌ Error al procesar las velas", "red")
@@ -84,7 +100,7 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
         #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
-        time.sleep(1)
+        time.sleep(0.001)
 
 # Tu código principal modificado
 VOLUME = 0.5

@@ -200,3 +200,19 @@ Gestiona la apertura, cierre y monitoreo de posiciones.
 - `open_short(symbol, volume, sl_pips, tp_pips)`: Abre posición de venta
 - `close_position(order)`: Cierra posición abierta
 - `monitor_positions(symbol)`
+
+## Modo Offline
+
+El modo offline permite ejecutar el bot sin conexión a MetaTrader 5, utilizando datos históricos para simular operaciones.
+
+### Ejecución en Modo Offline
+
+```bash
+python mainoff.py
+```
+
+### Exportar logs a fichero TXT
+
+```bash
+python mainoff.py | Out-File -FilePath "resultado.txt" -Encoding UTF8
+```
