@@ -123,8 +123,8 @@ def main():
         # Inicializar modelo
         logger.color_text("🔄 Inicializando modelo...", "blue")
         
-        candle_generator = CandleGeneratorOffline(file_path_chart_year)
-        candle_stick_strategy = CandleStickOffline(file_path_chart_year)
+        candle_generator = CandleGeneratorOffline(file_path_chart)
+        candle_stick_strategy = CandleStickOffline(file_path_chart)
         
         # Variable para controlar la última vela procesada
         last_processed_candle = None

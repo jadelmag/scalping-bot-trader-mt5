@@ -229,60 +229,87 @@ class CandleStickOffline:
         
         print(f"Tendencia: {trend}")
         
-        # --- Tienen mecha superior e inferior
+        # upper_wick_prev_float = float(f"{upper_wick_prev:.5f}")
+        # lower_wick_prev_float = float(f"{lower_wick_prev:.5f}")
+        # upper_wick_float = float(f"{upper_wick:.5f}")
+        # lower_wick_float = float(f"{lower_wick:.5f}")
 
-        # elif (has_upper_wick and has_lower_wick):
-        #     if (upper_wick > lower_wick * 2) and trend == TREND_DOWN:
-        #         return SIGNAL_SHORT, "04"
-        #     elif (upper_wick > lower_wick * 2) and trend == TREND_UP:
-        #         return SIGNAL_LONG, "05"
-        #     elif (upper_wick * 2 < lower_wick) and trend == TREND_DOWN:
-        #         return SIGNAL_SHORT, "06"
-        #     elif (upper_wick * 2 < lower_wick) and trend == TREND_UP:
-        #         return SIGNAL_LONG, "07"
-        #     elif (upper_wick > lower_wick) and trend == TREND_UP:
-        #         return SIGNAL_LONG, "08"
-        #     elif (upper_wick < lower_wick) and trend == TREND_DOWN:
-        #         return SIGNAL_SHORT, "09"
-        #     elif (upper_wick > lower_wick) and trend == TREND_DOWN:
-        #         return SIGNAL_SHORT, "10"
-        #     elif (upper_wick < lower_wick) and trend == TREND_UP:
-        #         return SIGNAL_LONG, "11" 
-        #     elif (upper_wick < lower_wick) and trend == TREND_NEUTRAL:
-        #         return SIGNAL_LONG, "12" 
-        #     elif (upper_wick > lower_wick) and trend == TREND_NEUTRAL:
-        #         return SIGNAL_SHORT, "13"
-        #     else:
-        #         return SIGNAL_SHORT, "14"
+        # 1. TIENE MECHA SUPERIOR E INFERIOR (Ambas mechas presentes)
+        if has_upper_wick and has_lower_wick:
+            # Patrón: Cuerpo pequeño con ambas mechas en tendencia bajista
+            if (body < 0.00005 and trend == TREND_DOWN and signal_prev == SIGNAL_SHORT):
+                print("01")
+                return SIGNAL_SHORT, "01"
                 
-        # --- No tiene mecha superior ni inferior
+            # Patrón: Cuerpo medio después de vela SHORT
+            elif (0.00005 <= body <= 0.0001 and signal_prev == SIGNAL_SHORT and trend == TREND_DOWN):
+                print("02")
+                return SIGNAL_SHORT, "02"
+                
+            # Patrón: Cambio de dirección después de consolidación
+            elif (body < 0.00002 and body_prev < 0.00002):
+                # Seguir la tendencia principal
+                print("03")
+                return SIGNAL_SHORT if trend == TREND_DOWN else SIGNAL_LONG, "03"
 
-        # elif (not has_upper_wick and not has_lower_wick):
-        #     if lower_wick >= body * 2 and trend == TREND_DOWN:
-        #         return SIGNAL_SHORT, "20"
-        #     elif lower_wick >= body * 2 and trend == TREND_UP:
-        #         return SIGNAL_LONG, "21"
-        #     elif (body > body_prev) and trend == TREND_UP:
-        #         return SIGNAL_SHORT, "22"
-        #     elif (body > body_prev) and trend == TREND_DOWN:
-        #         return SIGNAL_LONG, "23"
-        #     else:
-        #         return SIGNAL_SHORT, "24"
+            else:
+                print("04")
+                return SIGNAL_NONE, "04"
 
-        # --- Tienen mecha superior y no mecha inferior
+        # 2. NO TIENE MECHA SUPERIOR NI INFERIOR (Velas sólidas)
+        elif not has_upper_wick and not has_lower_wick:
+            # Patrón: Vela sólida alcista en tendencia alcista
+            if (body > 0.0001 and trend == TREND_UP and close_price > open_price):
+                print("20")
+                return SIGNAL_LONG, "20"
+                
+            # Patrón: Vela sólida bajista en tendencia bajista
+            elif (body > 0.0001 and trend == TREND_DOWN and close_price < open_price):
+                print("21")
+                return SIGNAL_SHORT, "21"
+                
+            # Patrón: Vela sólida pequeña (indecisión)
+            elif body < 0.00003:
+                print("22")
+                return SIGNAL_NONE, "22"
+            else:
+                print("23")
+                return SIGNAL_NONE, "23"
 
-        # elif (has_upper_wick and not has_lower_wick):
-        #     # Patrón: Rechazo en soporte en tendencia alcista
-        #     if (body > 0.0001 and trend == TREND_UP and signal_prev == SIGNAL_SHORT):
-        #         print("40")
-        #         return SIGNAL_LONG, "40"
-        #     else:
-        #         print("43")
-        #         return SIGNAL_NONE, "43"
+        # 3. TIENE MECHA SUPERIOR Y NO TIENE MECHA INFERIOR (Rechazo en zona alta)
+        elif has_upper_wick and not has_lower_wick:
+            if (signal_prev == SIGNAL_SHORT and signal == SIGNAL_SHORT and trend == TREND_DOWN):
+                if (lower_wick_prev > lower_wick):
+                    print("30")
+                    return SIGNAL_LONG, "30"
+                elif (lower_wick_prev == lower_wick):
+                    print("31")
+                    return SIGNAL_LONG, "31"
+                else:
+                    print("32")
+                    return SIGNAL_SHORT, "32"
+
+            # Patrón principal identificado: Rechazo en resistencia
+            elif (signal_prev == SIGNAL_SHORT and body > 0.0001 and trend == TREND_DOWN):
+                print("33")
+                return SIGNAL_SHORT, "33"
+                
+            # Patrón: Cuerpo pequeño con rechazo superior
+            elif (body < 0.00005 and trend == TREND_DOWN):
+                print("34")
+                return SIGNAL_SHORT, "34"
+                
+            # Patrón: Vela de rechazo después de movimiento alcista
+            elif (body > 0.00008 and signal_prev == SIGNAL_LONG and trend == TREND_UP):
+                # Posible agotamiento del movimiento
+                print("35")
+                return SIGNAL_NONE, "35"
+            else:
+                print("36")
+                return SIGNAL_NONE, "36"
         
-        # --- No tiene mecha superior y tienen mecha inferior
-
-        if not has_upper_wick and has_lower_wick:
+        # 4. NO TIENE MECHA SUPERIOR Y TIENE MECHA INFERIOR (Rechazo en zona baja)
+        elif not has_upper_wick and has_lower_wick:
             # Patrón: Rechazo en soporte en tendencia alcista
             if (body > 0.0001 and trend == TREND_UP and signal_prev != SIGNAL_SHORT):
                 print("40")
@@ -299,10 +326,6 @@ class CandleStickOffline:
                 print("42")
                 return SIGNAL_NONE, "42"
             # elif (signal_prev == SIGNAL_SHORT and signal == SIGNAL_LONG):
-            #     upper_wick_prev = float(f"{upper_wick_prev:.5f}")
-            #     lower_wick_prev = float(f"{lower_wick_prev:.5f}")
-            #     upper_wick = float(f"{upper_wick:.5f}")
-            #     lower_wick = float(f"{lower_wick:.5f}")
             #     if (lower_wick_prev < lower_wick):
             #         print("43")
             #         return SIGNAL_SHORT, "43"
@@ -312,7 +335,6 @@ class CandleStickOffline:
             else:
                 print("45")
                 return SIGNAL_NONE, "45"
-
     
         else:
             return SIGNAL_NONE, "50"
