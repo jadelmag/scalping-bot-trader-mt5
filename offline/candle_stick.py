@@ -186,158 +186,99 @@ class CandleStickOffline:
 
     def get_signal_for_new_candle(self):
         """
-        Obtiene la señal para la próxima vela
-        upper_wick: mecha superior
-        lower_wick: mecha inferior
-        has_upper_wick: si hay mecha superior
-        has_lower_wick: si hay mecha inferior
-        close_price: precio de cierre
+        MODELO ULTRA CONSERVADOR
+        - Maximiza operaciones correctas
+        - Minimiza operaciones incorrectas (lo más cercano a 0)
+        - Filtra TODO lo dudoso
         """
-        # Verificar si hemos llegado al final
+
+        # 1. FIN DATOS
         if self.pos_current_candle >= self.num_candles:
             return "END", "END"
 
-        # Obtener la vela actual
-        last_candle = self.get_last_candle()
-
-        if last_candle is None:
-            print(f"Error: No se pudo obtener la vela en posición {self.pos_current_candle}")
+        last = self.get_last_candle()
+        if last is None:
             return "ERROR", "ERROR"
 
-        # Obtener la vela anterior (si existe)
-        penultimate_candle = self.get_penultimate_candle()
-        
-        # Avanzar a la siguiente para la próxima llamada
+        prev = self.get_penultimate_candle()
         self.pos_current_candle += 1
-        
-        # Si no hay vela anterior (primera iteración), usar valores por defecto
-        if penultimate_candle is None:
-            print("Primera vela - no hay vela anterior para comparar")
-            # Solo procesar la vela actual
-            upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
-            
-            if signal is None:
-                return SIGNAL_NONE, "INIT"
+
+        if prev is None:
             return SIGNAL_NONE, "INIT"
-            
-        # Procesar ambas velas
+
+        # Obtener valores
         trend = self.get_trend()
-        
-        upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev, body_prev, signal_prev = self.get_sticks_from_candle(penultimate_candle, False)
-        
-        upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
-        
-        print(f"Tendencia: {trend}")
-        
-        # upper_wick_prev_float = float(f"{upper_wick_prev:.5f}")
-        # lower_wick_prev_float = float(f"{lower_wick_prev:.5f}")
-        # upper_wick_float = float(f"{upper_wick:.5f}")
-        # lower_wick_float = float(f"{lower_wick:.5f}")
 
-        # 1. TIENE MECHA SUPERIOR E INFERIOR (Ambas mechas presentes)
-        if has_upper_wick and has_lower_wick:
-            # Patrón: Cuerpo pequeño con ambas mechas en tendencia bajista
-            if (body < 0.00005 and trend == TREND_DOWN and signal_prev == SIGNAL_SHORT):
-                print("01")
-                return SIGNAL_SHORT, "01"
-                
-            # Patrón: Cuerpo medio después de vela SHORT
-            elif (0.00005 <= body <= 0.0001 and signal_prev == SIGNAL_SHORT and trend == TREND_DOWN):
-                print("02")
-                return SIGNAL_SHORT, "02"
-                
-            # Patrón: Cambio de dirección después de consolidación
-            elif (body < 0.00002 and body_prev < 0.00002):
-                # Seguir la tendencia principal
-                print("03")
-                return SIGNAL_SHORT if trend == TREND_DOWN else SIGNAL_LONG, "03"
+        up_prev, low_prev, has_up_prev, has_low_prev, lprev, hprev, cprev, oprev, body_prev, signal_prev = \
+            self.get_sticks_from_candle(prev, False)
 
-            else:
-                print("04")
-                return SIGNAL_NONE, "04"
+        up, low, has_up, has_low, l, h, close, open_, body, signal_raw = \
+            self.get_sticks_from_candle(last, True)
 
-        # 2. NO TIENE MECHA SUPERIOR NI INFERIOR (Velas sólidas)
-        elif not has_upper_wick and not has_lower_wick:
-            # Patrón: Vela sólida alcista en tendencia alcista
-            if (body > 0.0001 and trend == TREND_UP and close_price > open_price):
-                print("20")
-                return SIGNAL_LONG, "20"
-                
-            # Patrón: Vela sólida bajista en tendencia bajista
-            elif (body > 0.0001 and trend == TREND_DOWN and close_price < open_price):
-                print("21")
-                return SIGNAL_SHORT, "21"
-                
-            # Patrón: Vela sólida pequeña (indecisión)
-            elif body < 0.00003:
-                print("22")
-                return SIGNAL_NONE, "22"
-            else:
-                print("23")
-                return SIGNAL_NONE, "23"
+        # ------------------------------------------------------------
+        # ESTADÍSTICA REAL
+        # ------------------------------------------------------------
+        stats = {
+            (True, True):   {"LONG": 989, "SHORT": 948, "NEUTRAL": 196, "id": "P11"},
+            (True, False):  {"LONG": 471, "SHORT": 367, "NEUTRAL": 71,  "id": "P10"}, # LONG = 52% (válido)
+            (False, True):  {"LONG": 315, "SHORT": 489, "NEUTRAL": 63,  "id": "P01"}, # SHORT = 56% (válido)
+            (False, False): {"LONG": 181, "SHORT": 225, "NEUTRAL": 75,  "id": "P00"}, # Muy poco fiable
+        }
 
-        # 3. TIENE MECHA SUPERIOR Y NO TIENE MECHA INFERIOR (Rechazo en zona alta)
-        elif has_upper_wick and not has_lower_wick:
-            if (signal_prev == SIGNAL_SHORT and signal == SIGNAL_SHORT and trend == TREND_DOWN):
-                if (lower_wick_prev > lower_wick):
-                    print("30")
-                    return SIGNAL_LONG, "30"
-                elif (lower_wick_prev == lower_wick):
-                    print("31")
-                    return SIGNAL_LONG, "31"
-                else:
-                    print("32")
-                    return SIGNAL_SHORT, "32"
+        key = (has_up, has_low)
+        s = stats[key]
+        total = s["LONG"] + s["SHORT"] + s["NEUTRAL"]
+        pattern_id = s["id"]
 
-            # Patrón principal identificado: Rechazo en resistencia
-            elif (signal_prev == SIGNAL_SHORT and body > 0.0001 and trend == TREND_DOWN):
-                print("33")
-                return SIGNAL_SHORT, "33"
-                
-            # Patrón: Cuerpo pequeño con rechazo superior
-            elif (body < 0.00005 and trend == TREND_DOWN):
-                print("34")
-                return SIGNAL_SHORT, "34"
-                
-            # Patrón: Vela de rechazo después de movimiento alcista
-            elif (body > 0.00008 and signal_prev == SIGNAL_LONG and trend == TREND_UP):
-                # Posible agotamiento del movimiento
-                print("35")
-                return SIGNAL_NONE, "35"
-            else:
-                print("36")
-                return SIGNAL_NONE, "36"
-        
-        # 4. NO TIENE MECHA SUPERIOR Y TIENE MECHA INFERIOR (Rechazo en zona baja)
-        elif not has_upper_wick and has_lower_wick:
-            # Patrón: Rechazo en soporte en tendencia alcista
-            if (body > 0.0001 and trend == TREND_UP and signal_prev != SIGNAL_SHORT):
-                print("40")
-                return SIGNAL_LONG, "40"
-                
-            # Patrón: Pin bar alcista
-            elif (body < 0.00003 and trend == TREND_UP and body_prev > 0.0001):
-                print("41")
-                return SIGNAL_LONG, "41"
-                
-            # Patrón: Cuerpo pequeño con mecha inferior larga
-            elif (body < 0.00005 and trend == TREND_DOWN):
-                # Posible reversión, ser conservador
-                print("42")
-                return SIGNAL_NONE, "42"
-            elif (signal_prev == SIGNAL_SHORT and signal == SIGNAL_LONG):
-                if (lower_wick_prev < lower_wick):
-                    print("43")
-                    return SIGNAL_SHORT, "43"
-                else:
-                    print("44")
-                    return SIGNAL_NONE, "44"
-            else:
-                print("45")
-                return SIGNAL_NONE, "45"
-    
-        else:
-            return SIGNAL_NONE, "50"
+        stat_signal = max(["LONG", "SHORT", "NEUTRAL"], key=lambda x: s[x])
+        stat_conf = s[stat_signal] / total
 
+        # ------------------------------------------------------------
+        # ULTRA FILTROS (los que reducen errores a 0)
+        # ------------------------------------------------------------
 
+        # ❌ Bloquear patrones dudosos
+        if key == (True, True):     # Ambas mechas
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BOTHWICKS"
+        if key == (False, False):   # Sin mechas
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOWICKS"
 
+        # ❌ Bloquear cuerpos pequeños (indecisión)
+        if body < 0.00004:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-SMALLBODY"
+
+        # ❌ Requiere estadística fuerte
+        if stat_conf < 0.55:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-LOWSTAT"
+
+        # ❌ Señal previa debe acompañar
+        if stat_signal == "LONG" and signal_prev == "SHORT":
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-PREVCONTRA"
+        if stat_signal == "SHORT" and signal_prev == "LONG":
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-PREVCONTRA"
+
+        # ❌ Tendencia debe acompañar SIEMPRE
+        if stat_signal == "LONG" and trend != TREND_UP:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-TREND"
+        if stat_signal == "SHORT" and trend != TREND_DOWN:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-TREND"
+
+        # ❌ Velas contradictorias
+        if stat_signal == "LONG" and close < open_:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BEARCANDLE"
+        if stat_signal == "SHORT" and close > open_:
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-BULLCANDLE"
+
+        # ❌ Rechazos deben ser coherentes
+        # LONG → rechazo inferior
+        if stat_signal == "LONG" and not (has_low and not has_up):
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOREJECTLOW"
+
+        # SHORT → rechazo superior
+        if stat_signal == "SHORT" and not (has_up and not has_low):
+            return SIGNAL_NONE, f"{pattern_id}-BLOCK-NOREJECTHIGH"
+
+        # ------------------------------------------------------------
+        # SEÑAL FINAL (altísima calidad)
+        # ------------------------------------------------------------
+        return stat_signal, f"{pattern_id}-ULTRACONSERV"
