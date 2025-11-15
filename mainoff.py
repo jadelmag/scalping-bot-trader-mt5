@@ -49,11 +49,16 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
     num_neutral = 0
 
     while True:
+        print(f"\n=== ITERACIÓN DEL BUCLE - {datetime.now()} ===")
+        sys.stdout.flush()
+        
         logger.color_text(f"\n{'='*50}", "blue")
         logger.color_text(f"🕯️ NUEVA VELA INICIADA: ", "cyan")
         
         # Obtener el tiempo actual usando datetime
         candle_time = datetime.now()
+        print(f"Tiempo de vela: {candle_time}")
+        sys.stdout.flush()
 
         # Si teníamos una predicción anterior, verificar si fue correcta
         if last_prediction is not None:
@@ -103,28 +108,48 @@ def strategy_sticks(candle_generator, candle_stick_strategy, last_processed_cand
         #     logger.color_text("⚠️ Vela ya procesada, evitando duplicado", "yellow")
         #     resume_logger.log({"message": "⚠️ Vela ya procesada, evitando duplicado", "type": "info"})
 
-        time.sleep(0.001)
+        time.sleep(5)
 
 # Tu código principal modificado
 VOLUME = 0.5
 def main():
     """Función principal optimizada"""
+    print("=== INICIANDO MAINOFF.PY ===")
+    sys.stdout.flush()
+    
     try:
+        print("Antes de logger.color_text")
         logger.color_text("🚀 Iniciando Bot de Trading EURUSD 1M", "blue")
         logger.color_text("🎯 Estrategia: Operar al inicio de nueva vela basado en patrón de vela cerrada", "blue")
         
         logger.color_text("✅ Trabajando offline", "green")
+        print("Después de mensajes iniciales")
+        sys.stdout.flush()
 
         # Inicializar modelo
         logger.color_text("🔄 Inicializando modelo...", "blue")
-        candle_generator = CandleGeneratorOffline(file_path_chart_year)
-        candle_stick_strategy = CandleStickOffline(file_path_chart_year)
+        print(f"Cargando archivo: {file_path_chart}")
+        sys.stdout.flush()
+        
+        candle_generator = CandleGeneratorOffline(file_path_chart)
+        print("CandleGeneratorOffline creado")
+        sys.stdout.flush()
+        
+        candle_stick_strategy = CandleStickOffline(file_path_chart)
+        print("CandleStickOffline creado")
+        sys.stdout.flush()
         
         # Variable para controlar la última vela procesada
         last_processed_candle = None
+        print("Iniciando strategy_sticks...")
+        sys.stdout.flush()
+        
         strategy_sticks(candle_generator, candle_stick_strategy, last_processed_candle)
 
     except Exception as e:
+        print(f"ERROR EN MAIN: {e}")
+        import traceback
+        traceback.print_exc()
         logger.color_text(f"❌ Error: {e}", "red")
 
 if __name__ == "__main__":

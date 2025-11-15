@@ -6,7 +6,7 @@ SIGNAL_NONE = "NEUTRAL"
 
 class CandleGeneratorOffline:
     def __init__(self, path):
-        self.pos_current_candle = -1  # empieza antes de la primera vela
+        self.pos_current_candle = 0  # empieza antes de la primera vela
         self.candles = None
         self.num_candles = 0
 

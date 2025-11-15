@@ -91,30 +91,38 @@ class CandleStickOffline:
         Obtiene el tendencia de las últimas dos velas cerradas
         """
         try:
-            # Usar las velas ya obtenidas en get_signal_for_new_candle
-            # En lugar de obtener nuevas velas que podrían cambiar la posición
-            current_pos = self.pos_current_candle - 1  # Restar 1 porque ya se incrementó en get_penultimate_candle
+            # Calcular tendencia basada en la posición actual
+            current_pos = self.pos_current_candle - 1  # Posición actual (ya se incrementó)
             
-            if current_pos < 0 or current_pos + 1 >= self.num_candles:
+            # Necesitamos al menos 2 velas para calcular tendencia
+            if current_pos < 1:
+                print("get_trend: No hay suficientes velas para calcular tendencia (inicio)")
                 return TREND_NEUTRAL
                 
-            penultimate_candle = self.candles.iloc[current_pos]
-            last_candle = self.candles.iloc[current_pos + 1]
+            if current_pos >= self.num_candles:
+                print("get_trend: Posición fuera de rango")
+                return TREND_NEUTRAL
+                
+            # Acceder a las dos últimas velas procesadas
+            penultimate_candle = self.candles.iloc[current_pos - 1]  # Vela anterior
+            last_candle = self.candles.iloc[current_pos]  # Vela actual
                 
             # Acceso compatible con ambos formatos de CSV
             last_close = last_candle['Close']
             penult_close = penultimate_candle['Close']
-
+            
             if last_close > penult_close:
-                return TREND_UP
+                trend_result = TREND_UP
             elif last_close < penult_close:
-                return TREND_DOWN
+                trend_result = TREND_DOWN
             else:
-                return TREND_NEUTRAL
+                trend_result = TREND_NEUTRAL
+                
+            return trend_result
                 
         except (KeyError, AttributeError, TypeError, IndexError) as e:
             print(f"Error getting trend: {e}")
-            print(f"Current pos: {current_pos}, Num candles: {self.num_candles}")
+            print(f"Current pos: {current_pos if 'current_pos' in locals() else 'undefined'}, Num candles: {self.num_candles}")
             return TREND_NEUTRAL
 
     def get_sticks_from_candle(self, candle, last: bool = False):
@@ -122,7 +130,7 @@ class CandleStickOffline:
         Obtiene las mechas y datos de la última vela cerrada
         """
         if candle is None:
-            print("Error: candle is None")
+            print(f"Error: candle is None (last={last})")
             return None, None, False, False, 0, 0, 0, 0, 0, SIGNAL_NONE
             
         try:
@@ -185,26 +193,45 @@ class CandleStickOffline:
         has_lower_wick: si hay mecha inferior
         close_price: precio de cierre
         """
-        # AVANZAR LA VELA AHORA
+        # Verificar si hemos llegado al final
         if self.pos_current_candle >= self.num_candles:
             return "END", "END"
 
-        # Usar las velas actuales
-        penultimate_candle = self.get_penultimate_candle()
+        # Obtener la vela actual
         last_candle = self.get_last_candle()
 
-        # avanzar a la siguiente para la próxima llamada
+        if last_candle is None:
+            print(f"Error: No se pudo obtener la vela en posición {self.pos_current_candle}")
+            return "ERROR", "ERROR"
+
+        # Obtener la vela anterior (si existe)
+        penultimate_candle = self.get_penultimate_candle()
+        
+        # Avanzar a la siguiente para la próxima llamada
         self.pos_current_candle += 1
+        
+        # Si no hay vela anterior (primera iteración), usar valores por defecto
+        if penultimate_candle is None:
+            print("Primera vela - no hay vela anterior para comparar")
+            # Solo procesar la vela actual
+            upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
             
+            if signal is None:
+                return "NEUTRAL", "01"
+            return signal, "01"
+            
+        # Procesar ambas velas
         trend = self.get_trend()
-
+        
         upper_wick_prev, lower_wick_prev, has_upper_wick_prev, has_lower_wick_prev, low_price_prev, high_price_prev, close_price_prev, open_price_prev, body_prev, signal_prev = self.get_sticks_from_candle(penultimate_candle, False)
-
+        
         upper_wick, lower_wick, has_upper_wick, has_lower_wick, low_price, high_price, close_price, open_price, body, signal = self.get_sticks_from_candle(last_candle, True)
-
+        
         print(f"Tendencia: {trend}")
-
-        return signal, "00"
+        
+        if signal is None:
+            return "NEUTRAL", "02"
+        return signal, "02"
 
         # --- Tiene mecha superior e inferior, la diferencia entre mechas es pequeña y se cierra con el mismo precio
 
