@@ -27,9 +27,22 @@ class CandleStickOffline:
         self.get_candles_from_csv(path)
 
     def get_candles_from_csv(self, path):
-        """Carga las velas desde charts.csv"""
-        self.candles = pd.read_csv(path)
+        """Carga las velas desde CSV - compatible con chart.csv y DATA_M1_2024.csv"""
+        try:
+            # Intentar cargar como chart.csv (con headers y comas)
+            self.candles = pd.read_csv(path)
+            if 'Open' in self.candles.columns and 'Close' in self.candles.columns:
+                self.csv_format = 'chart'
+            else:
+                raise ValueError("No standard headers found")
+        except:
+            # Cargar como DATA_M1_2024.csv (sin headers y con punto y coma)
+            self.candles = pd.read_csv(path, sep=';', header=None, 
+                                    names=['DateTime', 'Open', 'High', 'Low', 'Close', 'Volume'])
+            self.csv_format = 'data_m1'
+        
         self.num_candles = len(self.candles)
+        print(f"CandleStickOffline: Loaded {self.num_candles} candles (format: {self.csv_format})")
 
     def get_last_candle(self):
         """
@@ -55,9 +68,9 @@ class CandleStickOffline:
             return SIGNAL_NONE
             
         try:
-            # Para pandas Series, usar bracket notation con nombres capitalizados
-            close_price = candle['Close'] if 'Close' in candle else candle.get('close')
-            open_price = candle['Open'] if 'Open' in candle else candle.get('open')
+            # Acceso compatible con ambos formatos de CSV
+            close_price = candle['Close']
+            open_price = candle['Open']
             
             if close_price is None or open_price is None:
                 return SIGNAL_NONE
@@ -70,6 +83,7 @@ class CandleStickOffline:
             
         except (KeyError, AttributeError, TypeError) as e:
             print(f"Error getting signal from candle: {e}")
+            print(f"Available columns: {candle.index.tolist() if hasattr(candle, 'index') else 'No index'}")
             return SIGNAL_NONE
 
     def get_trend(self):
@@ -87,9 +101,9 @@ class CandleStickOffline:
             penultimate_candle = self.candles.iloc[current_pos]
             last_candle = self.candles.iloc[current_pos + 1]
                 
-            # Para pandas Series, usar bracket notation
-            last_close = last_candle['Close'] if 'Close' in last_candle else last_candle['close']
-            penult_close = penultimate_candle['Close'] if 'Close' in penultimate_candle else penultimate_candle['close']
+            # Acceso compatible con ambos formatos de CSV
+            last_close = last_candle['Close']
+            penult_close = penultimate_candle['Close']
 
             if last_close > penult_close:
                 return TREND_UP
@@ -100,6 +114,7 @@ class CandleStickOffline:
                 
         except (KeyError, AttributeError, TypeError, IndexError) as e:
             print(f"Error getting trend: {e}")
+            print(f"Current pos: {current_pos}, Num candles: {self.num_candles}")
             return TREND_NEUTRAL
 
     def get_sticks_from_candle(self, candle, last: bool = False):
@@ -111,11 +126,11 @@ class CandleStickOffline:
             return None, None, False, False, 0, 0, 0, 0, 0, SIGNAL_NONE
             
         try:
-            # Para pandas Series, usar bracket notation con nombres capitalizados
-            open_price = candle['Open'] if 'Open' in candle else candle.get('open', 0)
-            high_price = candle['High'] if 'High' in candle else candle.get('high', 0)
-            low_price = candle['Low'] if 'Low' in candle else candle.get('low', 0)
-            close_price = candle['Close'] if 'Close' in candle else candle.get('close', 0)
+            # Acceso compatible con ambos formatos de CSV
+            open_price = candle['Open']
+            high_price = candle['High']
+            low_price = candle['Low']
+            close_price = candle['Close']
             
             if any(price == 0 for price in [open_price, high_price, low_price, close_price]):
                 print(f"Error: Missing price data in candle: {candle}")
@@ -124,6 +139,7 @@ class CandleStickOffline:
         except (KeyError, AttributeError, TypeError) as e:
             print(f"Error accessing candle data: {e}")
             print(f"Candle type: {type(candle)}")
+            print(f"Available columns: {candle.index.tolist() if hasattr(candle, 'index') else 'No index'}")
             print(f"Candle content: {candle}")
             return None, None, False, False, 0, 0, 0, 0, 0, SIGNAL_NONE
 
