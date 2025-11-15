@@ -1,60 +1,134 @@
-# 🤖 Scalping Bot Trader MT5
+# Scalping Bot Trader MT5
 
-**Bot de trading automatizado profesional para MetaTrader 5 con estrategia de análisis de velas japonesas en tiempo real**
+<div align="center">
 
-[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
-[![MetaTrader5](https://img.shields.io/badge/MetaTrader5-5.0.5260-green.svg)](https://www.metatrader5.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+**Bot de trading automatizado profesional para MetaTrader 5 con estrategia avanzada de análisis de patrones de velas japonesas**
 
-## 📋 Descripción
+[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg?style=for-the-badge)](https://www.python.org/)
+[![MetaTrader5](https://img.shields.io/badge/MetaTrader5-5.0.5260-green.svg?style=for-the-badge)](https://www.metatrader5.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg?style=for-the-badge)](#)
 
-Bot de trading automatizado de consola que se conecta a MetaTrader 5 para ejecutar operaciones en tiempo real basadas en el análisis técnico de patrones de velas japonesas. El sistema monitorea continuamente el mercado EURUSD en timeframe M1, predice la dirección de nuevas velas y valida sus predicciones con resultados reales.
+</div>
 
-## ✨ Características Principales
+---
 
-### 🎯 **Estrategia de Trading Avanzada**
-- **Análisis de Patrones de Velas**: Evaluación detallada de mechas superiores e inferiores
-- **Predicción en Tiempo Real**: Genera señales LONG/SHORT/NEUTRAL para cada nueva vela
-- **Validación Automática**: Compara predicciones con resultados reales de velas cerradas
-- **Timeframes Configurables**: Soporte para M1, M5, M15, M30, H1, H4, D1
+## Descripción
 
-### 📊 **Integración con MetaTrader 5**
-- **Conexión Segura**: Autenticación mediante variables de entorno
-- **Ejecución de Órdenes Reales**: Apertura automática de posiciones LONG/SHORT
-- **Gestión de Riesgo**: Stop Loss (200 pips) y Take Profit (300 pips) automáticos
-- **Monitoreo en Tiempo Real**: Seguimiento continuo de P&L de posiciones abiertas
+**Scalping Bot Trader MT5** es un sistema de trading automatizado de última generación que combina análisis técnico avanzado con inteligencia artificial para operar en los mercados financieros. El bot utiliza **19 patrones de velas japonesas** optimizados para timeframes de 1 minuto, ofreciendo tanto **modo en tiempo real** como **modo offline** para backtesting y análisis histórico.
 
-### 🛡️ **Sistema de Gestión de Posiciones**
-- **Apertura Inteligente**: Basada en análisis de 14 patrones de velas diferentes
-- **Cierre Automático**: Por tiempo (58 segundos) o por SL/TP
-- **Cálculo de Profit**: Actualización en tiempo real del beneficio/pérdida
-- **Prevención de Duplicados**: Control de velas ya procesadas
+### Características Destacadas
 
-### 📈 **Logging y Reportes Completos**
-- **Logs en Consola**: Salida colorizada con emojis para fácil seguimiento
-- **Archivos JSONL**: Registro estructurado de todas las operaciones
-- **Timestamps Precisos**: Seguimiento temporal de cada evento
-- **Métricas de Rendimiento**: Validación de señales correctas/incorrectas
+- ⚡ **Análisis en Tiempo Real**: Procesamiento instantáneo de nuevas velas
+- 🧠 **19 Patrones de Velas**: Sistema completo de reconocimiento de patrones
+- 📊 **Dual Mode**: Operación en vivo y análisis offline
+- 🎨 **Interfaz Colorizada**: Logs visuales con emojis y colores
+- 📈 **Métricas Avanzadas**: Estadísticas detalladas de rendimiento
+- 🔒 **Gestión de Riesgo**: SL/TP automáticos y control de posiciones
+
+## Funcionalidades Principales
+
+### Sistema de Análisis Avanzado
+
+- **🕯️ 19 Patrones de Velas Japonesas**:
+  - Hammer, Hanging Man, Shooting Star
+  - Doji, Spinning Tops, Marubozu
+  - Engulfing Patterns (Bullish/Bearish)
+  - Morning/Evening Star, Three White Soldiers
+  - Dark Cloud Cover, Piercing Pattern
+  - Tweezer Tops/Bottoms, Triple Formations
+  - Y muchos más...
+
+- **📊 Predicción Inteligente**: Señales LONG/SHORT/NEUTRAL basadas en análisis multi-patrón
+- **✅ Validación Automática**: Comparación en tiempo real de predicciones vs resultados
+- **⏱️ Timeframes Flexibles**: M1, M5, M15, M30, H1, H4, D1
+
+### Modos de Operación
+
+#### 🔴 Modo En Vivo (main.py)
+- Conexión directa a MetaTrader 5
+- Ejecución de órdenes reales
+- Monitoreo continuo del mercado
+- Gestión automática de posiciones
+
+#### 📊 Modo Offline (mainoff.py)
+- Análisis de datos históricos CSV
+- Backtesting completo de estrategias
+- Estadísticas detalladas de rendimiento
+- Sin riesgo financiero
+
+### Gestión de Riesgo Profesional
+
+- **Stop Loss Automático**: Protección de capital configurable
+- **Take Profit Inteligente**: Maximización de ganancias
+- **Control de Volumen**: Gestión precisa del tamaño de posición
+- **Prevención de Duplicados**: Evita operaciones múltiples en la misma vela
+
+### Sistema de Logging Avanzado
+
+- **🎨 Consola Colorizada**: Salida visual con códigos de color y emojis
+- **📄 Logs JSONL**: Registro estructurado para análisis posterior
+- **📊 Métricas en Tiempo Real**: Contadores de éxito/fallo/neutral
+- **⏰ Timestamps Precisos**: Seguimiento temporal de cada evento
 
 ## 🏗️ Arquitectura del Sistema
 
 ```
 scalping-bot-trader-mt5/
-├── main.py                              # Punto de entrada principal
-├── bot_console/
+├── 📄 main.py                           # Modo en vivo - Conexión MT5
+├── 📄 mainoff.py                        # Modo offline - Análisis histórico
+├── 📁 bot_console/                      # Módulo principal del bot
 │   ├── __init__.py                      # Inicializador del módulo
-│   ├── login.py                         # Autenticación MT5
-│   ├── metatrader5.py                   # Wrapper de MT5
-│   ├── predict_candle.py                # Generador y detector de velas
-│   ├── candle_stick_strategy.py         # Estrategia de análisis de velas
-│   ├── market_order.py                  # Gestión de órdenes y posiciones
-│   ├── logger.py                        # Sistema de logging colorizado
-│   └── resumes.py                       # Exportación de logs JSONL
-├── old_code/                            # Versiones anteriores
-├── .env                                 # Variables de entorno (credenciales)
-├── requirements.txt                     # Dependencias del proyecto
-└── README.md                            # Documentación
+│   ├── 🔐 login.py                      # Autenticación MT5
+│   ├── 🔗 metatrader5.py                # Wrapper de MT5
+│   ├── 🕯️ predict_candle.py             # Generador y detector de velas
+│   ├── 📊 candle_stick_strategy.py      # Estrategia de análisis de velas
+│   ├── 🧠 candle_patterns.py            # 19 patrones de velas japonesas
+│   ├── 💰 market_order.py               # Gestión de órdenes y posiciones
+│   ├── 🎨 logger.py                     # Sistema de logging colorizado
+│   ├── 📝 resumes.py                    # Exportación de logs JSONL
+│   └── 📁 oldcode/                      # Versiones anteriores bot_console
+│       └── candle_stick_strategy.py     # Estrategia anterior
+├── 📁 offline/                          # Módulo de análisis offline
+│   ├── 🕯️ candle.py                     # Generador de velas offline
+│   ├── 📊 candle_stick.py               # Estrategia offline
+│   ├── 📁 csv/                          # Datos CSV de prueba
+│   │   └── chart.csv                    # Datos de ejemplo
+│   ├── 📁 csv_years/                    # Datos históricos anuales
+│   │   └── DATA_M1_2024.csv             # Datos completos 2024
+│   └── 📁 oldcode/                      # Versiones anteriores offline
+│       ├── candle_stick.py              # Estrategia offline v1
+│       ├── candle_stick_v1.py           # Estrategia offline v1
+│       └── candle_stick_v2.py           # Estrategia offline v2
+├── 🔧 .env                              # Variables de entorno (credenciales)
+├── 📦 requirements.txt                  # Dependencias del proyecto
+├── 📖 README.md                         # Documentación
+├── 📄 LICENSE                           # Licencia MIT
+├── 📄 log.txt                           # Archivo de logs generado
+└── 🗂️ .gitignore                        # Archivos ignorados por Git
 ```
+
+### 🧩 Módulos Principales
+
+#### **🤖 Bot Console** (`bot_console/`)
+Módulo principal que contiene toda la lógica de trading en tiempo real:
+
+- **`candle_patterns.py`** - Sistema avanzado de 19 patrones de velas japonesas
+- **`candle_stick_strategy.py`** - Lógica de estrategia y toma de decisiones
+- **`predict_candle.py`** - Detección y análisis de nuevas velas
+- **`market_order.py`** - Gestión de órdenes y posiciones
+- **`logger.py`** - Sistema de logging colorizado con emojis
+- **`resumes.py`** - Exportación de logs en formato JSONL
+- **`oldcode/`** - Versiones anteriores del módulo bot_console
+
+#### **📊 Offline** (`offline/`)
+Módulo especializado para análisis histórico y backtesting:
+
+- **`candle.py`** - Procesamiento de datos CSV históricos
+- **`candle_stick.py`** - Análisis de patrones en modo offline
+- **`csv/`** - Datos CSV de prueba y ejemplos
+- **`csv_years/`** - Base de datos de velas históricas por año
+- **`oldcode/`** - Evolución del sistema offline (v1, v2, etc.)
 
 ## 🚀 Instalación y Configuración
 
